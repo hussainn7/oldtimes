@@ -1,0 +1,6 @@
+'use client';
+import {useRef,useState} from 'react';
+import World from '@/game/World';
+import {periods,regions} from '@/game/data';
+import type {WorldHandle} from '@/game/types';
+export default function Game(){const[started,setStarted]=useState(false);const[distance,setDistance]=useState(0);const world=useRef<WorldHandle>({x:650,moving:false,distance:0,nearby:''});const direction=useRef(0);return <main><World period={periods[0]} region={regions[0]} active={started} onExplore={setDistance} worldRef={world} direction={direction}/><header><a className="brand" href="/">◉ <span>EARTH THROUGH TIME</span></a><span className="eyebrow">AN EXPEDITION THROUGH DEEP TIME</span></header>{!started?<section className="start"><span className="eyebrow">THE STORY OF EVERYTHING BEFORE US</span><h1>Earth<br/><em>through time.</em></h1><p>4.5 billion years. One planet. Endless worlds.</p><button className="primary" onClick={()=>setStarted(true)}>Begin journey <span>↗</span></button></section>:<><section className="period-title"><span className="eyebrow">MESOZOIC · 150 MILLION YEARS AGO</span><h1>Late Jurassic</h1><p>A world of giants.</p></section><footer><span>WALK <kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd></span><span>{Math.round(distance)} m explored</span></footer></>}<div className="vignette"/></main>}
