@@ -1031,14 +1031,17 @@ footer {
   align-items: center;
   text-align: left;
   gap: 12px;
-  padding: 14px;
-  background: #1a3a32;
+  padding: 12px 4px;
+  background: transparent;
   font-size: 13px;
-  border-color: var(--line);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
 }
 .choices button:hover {
-  background: #244840;
+  background: transparent;
   border-color: var(--accent);
+  color: var(--accent-soft);
 }
 .choices small {
   font-size: 10px;
@@ -1258,7 +1261,7 @@ footer {
 
 @media (max-width: 650px) {
   :root {
-    --hud-h: 132px;
+    --hud-h: 112px;
   }
   main {
     min-height: 680px;
@@ -1286,9 +1289,13 @@ footer {
     height: 32px;
   }
   .timeline {
-    top: 48px;
-    left: 12px;
-    right: 12px;
+    top: 46px;
+    left: 10px;
+    right: 10px;
+  }
+  .timeline-rail,
+  .time-scrubber {
+    display: none;
   }
   .timeline-note,
   .timeline-top > .eyebrow {
@@ -1303,18 +1310,26 @@ footer {
     font-size: 10px;
     padding: 4px 2px;
   }
+  .timeline-strip {
+    padding: 4px 0 0;
+  }
   .timeline-strip button {
-    flex-basis: 78px;
+    flex-basis: 72px;
+    gap: 4px;
+    padding: 2px 0 4px;
+  }
+  .timeline-strip small {
+    display: none;
   }
   .period-title {
     left: 14px;
-    top: 118px;
-    max-width: 62%;
+    top: 128px;
+    max-width: 58%;
   }
   .period-title h1 {
-    font-size: 26px;
+    font-size: 24px;
     letter-spacing: -0.01em;
-    margin: 6px 0;
+    margin: 4px 0 0;
   }
   .period-title p {
     display: none;
@@ -1323,37 +1338,38 @@ footer {
     font-size: 8px;
   }
   .map-panel {
-    top: 118px;
-    right: 10px;
-    width: 84px;
+    top: 128px;
+    right: 8px;
+    width: 78px;
   }
   .map-label {
-    font-size: 7px;
+    display: none;
   }
   .earth-map svg {
-    width: 88px;
+    width: 72px;
   }
   .earth-map > span {
-    font-size: 8px;
+    font-size: 7px;
+    margin-top: 2px;
   }
   .earth-map small {
     display: none;
   }
-  .region-picker select {
-    font-size: 9px;
-    width: 96px;
-    padding: 4px 14px 4px 4px;
+  .region-picker {
+    margin-top: 4px;
   }
-  .period-title p {
-    display: none;
+  .region-picker select {
+    font-size: 8px;
+    width: 78px;
+    padding: 3px 12px 3px 3px;
   }
   .exploration {
     left: 14px;
-    top: 220px;
+    top: 196px;
     font-size: 10px;
   }
   .world-actions {
-    bottom: calc(var(--hud-h) + 10px);
+    bottom: calc(var(--hud-h) + 12px);
     left: 12px;
     right: 12px;
     gap: 6px;
@@ -1364,7 +1380,7 @@ footer {
   }
   .investigate {
     font-size: 11px;
-    padding: 10px 12px;
+    padding: 8px 2px;
     gap: 6px;
   }
   .investigate kbd {
@@ -1386,14 +1402,14 @@ footer {
   }
   .bottom-hud {
     grid-template-columns: 1fr 1fr;
-    padding: 12px 14px 14px;
+    padding: 10px 14px 12px;
     gap: 12px;
   }
   .field-note {
     display: none;
   }
   .vitals {
-    gap: 10px 12px;
+    gap: 8px 10px;
   }
   .vitals > div > div {
     font-size: 10px;
@@ -1407,9 +1423,6 @@ footer {
   .survival-factors {
     font-size: 8px;
     gap: 2px 8px;
-  }
-  .survival small.disclaimer {
-    font-size: 7px;
   }
   .start {
     left: 6%;

@@ -227,6 +227,21 @@ export default function World({
         ellipse(cx + 40, h * 0.26 + noise(i) * 60, 55, 20, '#e0e7cd');
       }
       c.globalAlpha = 1;
+      if (['jurassic', 'flower', 'savanna', 'modern'].includes(p.biome)) {
+        for (let i = 0; i < 6; i++) {
+          const bx =
+            ((i * 210 + t * (8 + (i % 3)) - camera * 0.05) % (w + 80)) - 40;
+          const by = h * 0.32 + noise(i) * 40 + Math.sin(t * 0.6 + i) * 6;
+          c.globalAlpha = 0.2;
+          c.strokeStyle = '#c9d4b8';
+          c.lineWidth = 1.2;
+          c.beginPath();
+          c.moveTo(bx, by);
+          c.quadraticCurveTo(bx + 6, by - 4, bx + 12, by);
+          c.stroke();
+        }
+        c.globalAlpha = 1;
+      }
       for (let l = 0; l < 4; l++) {
         const pts: number[][] = [[0, h]];
         for (let x = -100; x < w + 120; x += 60) {
