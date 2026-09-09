@@ -84,3 +84,46 @@ test('recent dates do not round to zero', () => {
   assert.equal(shortDate(periods[26]), '200 YA');
   assert.equal(shortDate(periods[27]), 'TODAY');
 });
+
+import {
+  heightAt,
+  stepPosition,
+  bounds,
+} from '../.test-build/three/terrain.js';
+import { buildSpeciesRegistry } from '../.test-build/assets.js';
+test('3D terrain is finite across all era/region pairs and shoreline stays underwater', () => {
+  for (const p of periods)
+    for (const r of regions) {
+      for (const x of [2, 13, 70, 122])
+        for (const z of [-9, 0, 3, 13]) {
+          assert.ok(Number.isFinite(heightAt(x, z, p.biome, r)));
+          assert.ok(
+            Math.abs(
+              heightAt(x + 0.1, z, p.biome, r) - heightAt(x, z, p.biome, r),
+            ) < 0.5,
+          );
+        }
+    }
+  assert.ok(heightAt(13, -40, 'ocean', regions[0]) < -1.6);
+});
+test('3D movement slides out of obstacles and respects the expedition boundary', () => {
+  const obstacles = [{ x: 10, z: 3, radius: 1 }];
+  const p = stepPosition(8, 3, 1.5, 0.2, obstacles);
+  assert.ok(Math.hypot(p.x - 10, p.z - 3) >= 1.319);
+  const edge = stepPosition(3, 1, -200, 200, []);
+  assert.equal(edge.x, bounds.minX);
+  assert.equal(edge.z, bounds.maxZ);
+  const stationary = stepPosition(13, 3, 0, 0, []);
+  assert.deepEqual(stationary, { x: 13, z: 3 });
+});
+test('3D species keys are stable and retain all historical memberships', () => {
+  const registry = buildSpeciesRegistry(periods);
+  assert.equal(new Set(registry.map((s) => s.id)).size, registry.length);
+  for (const p of periods)
+    for (const species of p.species) {
+      const item = registry.find((s) => s.name === species.name);
+      assert.ok(item.periodIds.includes(p.id));
+      assert.match(item.id, /^[a-z0-9-]+$/);
+      assert.ok(item.model.scale > 0);
+    }
+});
