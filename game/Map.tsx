@@ -90,8 +90,16 @@ export default function EarthMap({
             </>
           )}
         </g>
-        <circle cx={r.x} cy={r.y} r="8" fill="#f1d49922" stroke="#f1d49966" />
-        <circle cx={r.x} cy={r.y} r="3" fill="#f4d195" />
+        <circle
+          className="loc-pulse"
+          cx={r.x}
+          cy={r.y}
+          r="10"
+          fill="none"
+          stroke="#f1d49944"
+          strokeWidth="1"
+        />
+        <circle cx={r.x} cy={r.y} r="2.5" fill="#f4d195" />
       </svg>
       <span>{p.continents}</span>
       <small>Approximate reconstruction · schematic</small>

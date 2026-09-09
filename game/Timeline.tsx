@@ -2,6 +2,15 @@
 import { useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { periods, shortDate } from './data';
+
+const ERA_JUMPS: [string, number][] = [
+  ['Origins', 0],
+  ['Paleozoic', 6],
+  ['Mesozoic', 12],
+  ['Cenozoic', 17],
+  ['Today', 27],
+];
+
 export default function Timeline({
   index,
   onChange,
@@ -12,6 +21,7 @@ export default function Timeline({
   const strip = useRef<HTMLDivElement>(null);
   const last = useRef(0);
   const drag = useRef({ down: false, x: 0, left: 0, moved: false });
+
   useEffect(() => {
     const center = () => {
       const selected = strip.current?.children[index] as
@@ -33,27 +43,35 @@ export default function Timeline({
     if (strip.current) observer.observe(strip.current);
     return () => observer.disconnect();
   }, [index]);
+
   return (
     <nav className="timeline" aria-label="Travel through Earth's history">
       <div className="timeline-top">
-        <span className="eyebrow">DEEP TIME</span>
+        <span className="eyebrow">Deep time</span>
         <div className="era-jumps">
-          {[
-            ['Origins', 0],
-            ['Paleozoic', 6],
-            ['Mesozoic', 12],
-            ['Cenozoic', 17],
-            ['Today', 27],
-          ].map(([name, i]) => (
-            <button key={name} onClick={() => onChange(Number(i))}>
+          {ERA_JUMPS.map(([name, i]) => (
+            <button
+              key={name}
+              type="button"
+              aria-current={
+                index === i ||
+                (name === 'Origins' && index < 6) ||
+                (name === 'Paleozoic' && index >= 6 && index < 12) ||
+                (name === 'Mesozoic' && index >= 12 && index < 17) ||
+                (name === 'Cenozoic' && index >= 17 && index < 27) ||
+                (name === 'Today' && index === 27)
+                  ? 'true'
+                  : undefined
+              }
+              onClick={() => onChange(i)}
+            >
               {name}
             </button>
           ))}
         </div>
-        <span className="timeline-note">
-          28 checkpoints · expanded recent time
-        </span>
+        <span className="timeline-note">4.5 billion years · 28 worlds</span>
       </div>
+      <div className="timeline-rail" aria-hidden="true" />
       <div
         className="timeline-strip"
         ref={strip}
@@ -101,6 +119,7 @@ export default function Timeline({
         {periods.map((p, i) => (
           <button
             key={p.id}
+            type="button"
             onClick={() => onChange(i)}
             aria-current={i === index ? 'step' : undefined}
             title={`${p.name} — ${p.date}`}

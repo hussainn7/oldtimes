@@ -506,9 +506,17 @@ export default function World({
       ellipse(0, -52, 12, 3, '#ece0bd');
       c.restore();
       c.fillStyle = '#f3ecda';
-      c.font = '10px sans-serif';
+      c.font = '500 11px "Source Sans 3", sans-serif';
       c.textAlign = 'center';
-      c.fillText('YOU', px, py - 70);
+      c.globalAlpha = 0.85;
+      c.fillText('You', px, py - 68);
+      if (state.nearby && nearDist < 230) {
+        c.font = '400 10px "Source Sans 3", sans-serif';
+        c.fillStyle = '#e8d4a8';
+        c.globalAlpha = 0.9;
+        c.fillText(state.nearby, px, py - 84);
+      }
+      c.globalAlpha = 1;
       // Foreground fronds frame the expedition without obscuring the walking path.
       if (['jurassic', 'swamp', 'flower', 'modern'].includes(p.biome)) {
         for (let i = 0; i < 10; i++) {

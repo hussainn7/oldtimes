@@ -39,6 +39,8 @@ React + TypeScript, Vite/Vinext, HTML Canvas, SVG, Base UI primitives, Lucide ic
 | Module | Responsibility |
 | --- | --- |
 | `game/data.ts` | 28 historical snapshots, fauna, five regions, environmental profiles |
+| `game/assets.ts` | Species/environment registries + paths for future `.glb` assets |
+| `public/assets/` | Drop zone for animals, vegetation, environments, characters, maps, fonts |
 | `game/World.tsx` | Camera, movement, parallax, lighting, terrain and atmosphere |
 | `game/vegetation.ts` | Cached procedural botanical artwork |
 | `game/animals.ts` | Articulated species silhouettes |

@@ -5,6 +5,7 @@ execFileSync(
   [
     'node_modules/typescript/bin/tsc',
     'game/types.ts',
+    'game/assets.ts',
     'game/data.ts',
     'game/events.ts',
     'game/survival.ts',

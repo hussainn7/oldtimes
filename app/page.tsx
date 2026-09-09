@@ -1,16 +1,5 @@
 'use client';
-import {
-  BookOpen,
-  Compass,
-  ArrowLeft,
-  ArrowRight,
-  Pause,
-  Play,
-  Info,
-  MapPin,
-  Globe2,
-  MoveRight,
-} from 'lucide-react';
+import { BookOpen, Pause, Play, Info, ArrowLeft, ArrowRight } from 'lucide-react';
 import World from '@/game/World';
 import Timeline from '@/game/Timeline';
 import EarthMap from '@/game/Map';
@@ -24,9 +13,11 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from '@/components/ui/native-select';
+
 export default function Game() {
   const g = useExpedition();
   useWebMCP(g);
+
   return (
     <main
       className={`${g.started ? 'playing' : 'landing'} ${g.traveling ? 'traveling' : ''}`}
@@ -40,24 +31,28 @@ export default function Game() {
         direction={g.direction}
       />
       <div className="vignette" />
+
       <header>
         <button
           className="brand"
+          type="button"
           onClick={() => g.setPanel('help')}
           aria-label="Earth Through Time — how to play"
         >
-          <Globe2 size={23} />
-          <span>EARTH THROUGH TIME</span>
+          <span>
+            Earth <em>Through Time</em>
+          </span>
         </button>
         <div className="header-right">
           {g.started && (
             <>
               <button
                 className="journal-button"
+                type="button"
                 onClick={() => g.setPanel('journal')}
               >
-                <BookOpen size={15} />
-                <span>Field journal</span>
+                <BookOpen size={14} />
+                <span>Journal</span>
                 <b>
                   {g.visited.length}
                   <small>/28</small>
@@ -65,85 +60,88 @@ export default function Game() {
               </button>
               <button
                 className="icon-button"
+                type="button"
                 aria-label={g.paused ? 'Resume expedition' : 'Pause expedition'}
                 onClick={() => g.setPaused(!g.paused)}
               >
-                {g.paused ? <Play size={16} /> : <Pause size={16} />}
+                {g.paused ? <Play size={15} /> : <Pause size={15} />}
               </button>
             </>
           )}
           <Audio biome={g.period.biome} paused={g.paused} />
           <button
             className="icon-button"
+            type="button"
             aria-label="How to play"
             onClick={() => g.setPanel('help')}
           >
-            <Info size={17} />
+            <Info size={15} />
           </button>
         </div>
       </header>
+
       {!g.started ? (
         <>
           <section className="start">
             <span className="eyebrow">
-              <span className="tiny-line" /> AN EXPEDITION THROUGH DEEP TIME
+              <span className="tiny-line" />A natural-history expedition
             </span>
             <h1>
               Earth
               <br />
               <em>through time.</em>
             </h1>
-            <p>4.5 billion years. One planet. Endless worlds.</p>
-            <button className="primary" onClick={g.begin}>
-              Begin journey <MoveRight size={20} />
+            <p>Walk 4.5 billion years of one living planet.</p>
+            <button className="primary" type="button" onClick={g.begin}>
+              Begin journey <ArrowRight size={16} />
             </button>
             <button
               className="text-button"
+              type="button"
               onClick={() => {
                 g.begin();
                 g.travel(0);
               }}
             >
-              Explore from the beginning <span>↗</span>
+              Start from the beginning →
             </button>
           </section>
           <div className="landing-caption">
-            <span className="eyebrow">A WINDOW INTO THE LATE JURASSIC</span>
+            <span className="eyebrow">Late Jurassic</span>
             <p>150 million years before you.</p>
           </div>
           <footer>
-            <span>WALK INTO THE PAST. FIND YOUR PLACE IN IT.</span>
+            <span>Walk into the past. Find your place in it.</span>
             <button
               className="text-button"
+              type="button"
               onClick={() => g.setPanel('credits')}
             >
-              Science & credits ↗
+              Science & credits →
             </button>
           </footer>
         </>
       ) : (
         <>
           <Timeline index={g.index} onChange={g.travel} />
+
           <section className="period-title" aria-live="polite">
             <span className="eyebrow">
               <span className="tiny-line" />
-              {g.period.era.toUpperCase()} · {g.period.date.toUpperCase()}
+              {g.period.era} · {g.period.date}
             </span>
             <h1>{g.period.name}</h1>
             <p>
               {g.period.biome === 'jurassic'
                 ? 'Before us, a world of giants.'
-                : g.period.climate + ' · ' + g.period.vegetation}
+                : `${g.period.climate} · ${g.period.vegetation}`}
             </p>
           </section>
+
           <aside className="map-panel">
-            <div className="map-label">
-              <Compass size={14} />
-              <span>YOUR PLACE ON EARTH</span>
-            </div>
+            <div className="map-label">Earth</div>
             <EarthMap period={g.period} region={g.region} />
             <div className="region-picker">
-              <MapPin size={12} />
               <NativeSelect
                 aria-label="Starting region"
                 value={g.regionIndex}
@@ -157,18 +155,18 @@ export default function Game() {
               </NativeSelect>
             </div>
           </aside>
-          <div className="exploration">
-            <span className="eyebrow">
-              EXPEDITION {String(g.index + 1).padStart(2, '0')}
-            </span>
-            <span>{Math.round(g.distance)} m explored</span>
+
+          <div className="exploration" aria-live="polite">
+            <b>{Math.round(g.distance)} m</b>
             <div className="route-progress">
               <i style={{ width: `${Math.min(100, g.distance / 55)}%` }} />
             </div>
           </div>
+
           <div className="world-actions">
             <div className="walk-controls">
               <button
+                type="button"
                 aria-label="Walk left"
                 onPointerDown={(e) => {
                   e.currentTarget.setPointerCapture(e.pointerId);
@@ -178,9 +176,10 @@ export default function Game() {
                 onPointerCancel={g.stopWalking}
                 onLostPointerCapture={g.stopWalking}
               >
-                <ArrowLeft size={17} />
+                <ArrowLeft size={16} />
               </button>
               <button
+                type="button"
                 aria-label="Walk right"
                 onPointerDown={(e) => {
                   e.currentTarget.setPointerCapture(e.pointerId);
@@ -190,44 +189,47 @@ export default function Game() {
                 onPointerCancel={g.stopWalking}
                 onLostPointerCapture={g.stopWalking}
               >
-                <ArrowRight size={17} />
+                <ArrowRight size={16} />
               </button>
               <span>
                 <kbd>A</kbd>
-                <kbd>D</kbd> TO EXPLORE
+                <kbd>D</kbd>
               </span>
             </div>
             <button
               className="investigate"
+              type="button"
               disabled={!g.active}
               onClick={g.trigger}
             >
-              <Compass size={16} />
               <span>
-                {g.nearby ? 'Observe wildlife' : 'Investigate surroundings'}
+                {g.nearby ? 'Observe wildlife' : 'Investigate'}
               </span>
               <kbd>E</kbd>
             </button>
             <button
               className="next-era"
+              type="button"
               onClick={() => g.travel((g.index + 1) % periods.length)}
             >
-              {g.index === 27 ? 'Return to origins' : 'Next world'}
-              <ArrowRight size={16} />
+              {g.index === 27 ? 'Origins' : 'Next world'}
+              <ArrowRight size={14} />
             </button>
           </div>
+
           <Hud
             period={g.period}
             region={g.region}
             stats={g.stats}
             onInfo={() => g.setPanel('notes')}
           />
+
           {(g.paused || g.stats.health <= 0) && !g.panel && !g.encounter && (
             <div className="pause-screen">
               <span className="eyebrow">
                 {g.stats.health <= 0
-                  ? 'THE EXPEDITION ENDS. CURIOSITY DOES NOT.'
-                  : 'TAKE YOUR TIME'}
+                  ? 'The expedition ends. Curiosity does not.'
+                  : 'Take your time'}
               </span>
               <h2>
                 {g.stats.health <= 0
@@ -236,23 +238,23 @@ export default function Game() {
               </h2>
               <p>
                 {g.stats.health <= 0
-                  ? 'Your discoveries are safe in your journal. Try again with fresh supplies or travel onward.'
-                  : 'Your supplies are safe while you pause.'}
+                  ? 'Your discoveries stay in the journal. Retry with fresh supplies, or travel onward.'
+                  : 'Supplies hold while you pause.'}
               </p>
               <button
                 className="primary"
+                type="button"
                 onClick={() =>
                   g.stats.health <= 0 ? g.retry() : g.setPaused(false)
                 }
               >
-                {g.stats.health <= 0
-                  ? 'Try this world again'
-                  : 'Resume expedition'}
-                <ArrowRight size={17} />
+                {g.stats.health <= 0 ? 'Try again' : 'Resume'}
+                <ArrowRight size={15} />
               </button>
               {g.stats.health <= 0 && (
                 <button
                   className="text-button"
+                  type="button"
                   onClick={() => g.travel((g.index + 1) % periods.length)}
                 >
                   Travel to the next world →
@@ -260,9 +262,12 @@ export default function Game() {
               )}
             </div>
           )}
+
           {g.traveling && (
             <div className="travel-flash" aria-hidden="true">
-              <span>TRAVELING THROUGH DEEP TIME</span>
+              <span>Traveling through deep time</span>
+              <strong>{g.period.name}</strong>
+              <small>{g.period.date}</small>
             </div>
           )}
         </>

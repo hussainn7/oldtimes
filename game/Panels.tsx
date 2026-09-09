@@ -22,26 +22,24 @@ export default function Panels({
         }}
       >
         <DialogContent className="field-dialog">
-          <span className="eyebrow">
-            EARTH THROUGH TIME · EXPEDITION ARCHIVE
-          </span>
+          <span className="eyebrow">Expedition archive</span>
           <DialogTitle className="dialog-title">
             {g.panel === 'notes'
               ? g.period.name
               : g.panel === 'journal'
-                ? 'Your field journal'
+                ? 'Field journal'
                 : g.panel === 'credits'
-                  ? 'A living reconstruction'
-                  : 'A little curiosity goes a long way.'}
+                  ? 'Science & credits'
+                  : 'How to play'}
           </DialogTitle>
           <DialogDescription className="dialog-description">
             {g.panel === 'notes'
               ? g.period.date
               : g.panel === 'journal'
-                ? `${g.visited.length} of ${28} worlds discovered. Your discoveries are saved on this device.`
+                ? `${g.visited.length} of 28 worlds · saved on this device`
                 : g.panel === 'credits'
-                  ? 'History informed by science. Worlds interpreted through art.'
-                  : 'Walk ancient worlds. Observe. Make a choice. Then travel somewhere new.'}
+                  ? 'History informed by science. Worlds shaped by art.'
+                  : 'Walk. Observe. Choose. Travel.'}
           </DialogDescription>
           <div className="panel-body">
             {g.panel === 'notes' ? (
@@ -115,27 +113,29 @@ export default function Panels({
                   <strong>{g.visited.length}/28</strong>
                   <p>
                     {g.visited.length === 28
-                      ? 'Every world discovered. The story continues with us.'
-                      : 'Every unfamiliar horizon is another page.'}
+                      ? 'Atlas complete. Every horizon recorded.'
+                      : 'Each new world becomes a page.'}
                   </p>
                 </div>
                 <div className="atlas-grid" aria-label="Discovered worlds">
-                  {periods.map((p, i) => (
-                    <button
-                      key={p.id}
-                      className={g.visited.includes(p.id) ? 'discovered' : ''}
-                      onClick={() => {
-                        g.travel(i);
-                        g.setPanel(null);
-                      }}
-                      title={p.name}
-                    >
-                      <small>
-                        {g.visited.includes(p.id) ? '✓' : '○'} {shortDate(p)}
-                      </small>
-                      <span>{p.name}</span>
-                    </button>
-                  ))}
+                  {periods.map((p, i) => {
+                    const found = g.visited.includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={found ? 'discovered' : ''}
+                        onClick={() => {
+                          g.travel(i);
+                          g.setPanel(null);
+                        }}
+                        title={p.name}
+                      >
+                        <small>{shortDate(p)}</small>
+                        <span>{found ? p.name : '—'}</span>
+                      </button>
+                    );
+                  })}
                 </div>
                 {g.entries.length ? (
                   g.entries.map((e, i) => (
@@ -255,7 +255,7 @@ export default function Panels({
       >
         <DialogContent className="encounter-dialog">
           <span className="eyebrow">
-            {g.encounter?.category} · FIELD ENCOUNTER
+            {g.encounter?.category} · Encounter
           </span>
           <DialogTitle className="dialog-title">
             {g.encounter?.title}

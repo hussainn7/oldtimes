@@ -49,6 +49,14 @@ export function survival(p: Period, r: Region, s: Stats) {
     temperature: temp,
   };
 }
+
+/** Map a risk factor score into a short field word for the HUD. */
+export function factorTone(n: number): { word: string; cls: string } {
+  if (n < 8) return { word: 'good', cls: 'ok' };
+  if (n < 18) return { word: 'fair', cls: '' };
+  if (n < 30) return { word: 'limited', cls: 'warn' };
+  return { word: 'high', cls: 'warn' };
+}
 export function tick(s: Stats, p: Period, r: Region): Stats {
   const stress =
     Math.max(0, Math.abs(p.temperature + r.temperature - 20) - 10) / 35;

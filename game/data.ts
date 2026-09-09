@@ -1,4 +1,9 @@
 import type { Period, Region, Biome, Species, AnimalKind } from './types';
+import {
+  buildEnvironmentRegistry,
+  buildSpeciesRegistry,
+} from './assets';
+export { explorerAsset, ASSET_ROOTS } from './assets';
 export const regions: Region[] = [
   {
     id: 'coast',
@@ -666,3 +671,7 @@ export const shortDate = (p: Period) =>
         : p.mya
           ? `${Math.round(p.mya * 1e6)} YA`
           : 'TODAY';
+
+/** Registries for Astra / 3D loaders — procedural fallback when model.src is unset. */
+export const speciesAssets = buildSpeciesRegistry(periods);
+export const environmentAssets = buildEnvironmentRegistry(periods);

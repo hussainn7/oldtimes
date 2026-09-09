@@ -112,7 +112,7 @@ export function useExpedition() {
       old.includes(periods[i].id) ? old : [...old, periods[i].id],
     );
     if (travelTimer.current) clearTimeout(travelTimer.current);
-    travelTimer.current = setTimeout(() => setTraveling(false), 800);
+    travelTimer.current = setTimeout(() => setTraveling(false), 1100);
   }, []);
   const begin = () => {
     setStarted(true);
