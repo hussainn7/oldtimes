@@ -1,6 +1,23 @@
 {
   "version": 1,
   "models": {
+    "animals/allosaurus": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "periodIds": [
+        "jurassic"
+      ],
+      "species": "Allosaurus",
+      "triangles": 2028,
+      "textureSize": 0,
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "alert": "Alert"
+      },
+      "src": "/assets/animals/allosaurus.glb"
+    },
     "animals/brachiosaurus": {
       "scale": 1,
       "offsetY": 0,
@@ -21,6 +38,60 @@
         "alert": "Look"
       },
       "src": "/assets/animals/brachiosaurus.glb"
+    },
+    "animals/early-mammoth": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "periodIds": [
+        "pleistocene"
+      ],
+      "species": "Early mammoth",
+      "triangles": 2134,
+      "textureSize": 0,
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "graze": "Graze",
+        "alert": "Alert"
+      },
+      "src": "/assets/animals/early-mammoth.glb"
+    },
+    "animals/steppe-mammoth": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "periodIds": [
+        "million"
+      ],
+      "species": "Steppe mammoth",
+      "triangles": 2134,
+      "textureSize": 0,
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "graze": "Graze",
+        "alert": "Alert"
+      },
+      "src": "/assets/animals/steppe-mammoth.glb"
+    },
+    "animals/woolly-mammoth": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "periodIds": [
+        "human-world"
+      ],
+      "species": "Woolly mammoth",
+      "triangles": 2302,
+      "textureSize": 0,
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "graze": "Graze",
+        "alert": "Alert"
+      },
+      "src": "/assets/animals/woolly-mammoth.glb"
     },
     "characters/explorer": {
       "scale": 1,

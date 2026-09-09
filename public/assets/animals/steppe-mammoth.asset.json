@@ -1,0 +1,17 @@
+{
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "periodIds": [
+    "million"
+  ],
+  "species": "Steppe mammoth",
+  "triangles": 2134,
+  "textureSize": 0,
+  "clips": {
+    "idle": "Idle",
+    "walk": "Walk",
+    "graze": "Graze",
+    "alert": "Alert"
+  }
+}
