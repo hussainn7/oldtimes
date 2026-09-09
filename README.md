@@ -4,7 +4,7 @@ A playable, illustrated expedition through 4.5 billion years of Earth history. B
 
 ## Play
 
-- **A / D** or **left / right arrows**: walk. Hold the touch arrows on a phone.
+- **WASD** or **arrow keys**: explore in 3D. Hold the four touch arrows on a phone. **Shift** moves faster; drag to orbit, scroll to zoom, **R** recenters.
 - **E**: investigate. Encounters also appear as you walk.
 - **[ / ]**: previous / next world.
 - Drag, scroll, click, or use the slider to travel through 28 checkpoints.
@@ -34,14 +34,19 @@ npm run build
 
 ## Architecture
 
-React + TypeScript, Vite/Vinext, HTML Canvas, SVG, Base UI primitives, Lucide icons. Fonts ship locally from `public/assets/fonts`. No external art or audio requests are needed.
+React + TypeScript, Vite/Vinext, Three.js/WebGL2 with a Canvas compatibility view, SVG, Base UI primitives, Lucide icons. Fonts ship locally from `public/assets/fonts`. No external art or audio requests are needed.
 
 | Module | Responsibility |
 | --- | --- |
 | `game/data.ts` | 28 historical snapshots, fauna, five regions, environmental profiles |
 | `game/assets.ts` | Species/environment registries + paths for future `.glb` assets |
 | `public/assets/` | Drop zone for animals, vegetation, environments, characters, maps, fonts |
-| `game/World.tsx` | Camera, movement, parallax, lighting, terrain and atmosphere |
+| `game/World.tsx` | Lazy 3D loading and automatic Canvas compatibility view |
+| `game/three/expedition.ts` | Camera, 3D movement, wildlife behavior, gameplay bridge and resource lifecycle |
+| `game/three/environment.ts` | Instanced vegetation/rocks, terrain, water, lighting atmosphere |
+| `game/three/assets.ts` | glTF loader, static instancing, skeleton cloning, animation crossfades |
+| `game/three/models.ts` | Authored procedural 3D characters, species and plants |
+| `scripts/asset-manifest.mjs` | Automatic asset indexing at startup/build |
 | `game/vegetation.ts` | Cached procedural botanical artwork |
 | `game/animals.ts` | Articulated species silhouettes |
 | `game/useExpedition.ts` | State, time travel, encounters, progression, device-local saves |
@@ -52,7 +57,9 @@ React + TypeScript, Vite/Vinext, HTML Canvas, SVG, Base UI primitives, Lucide ic
 | `game/Panels.tsx` | Field notes, journal, atlas, help, credits, decisions |
 | `game/useWebMCP.ts` | Optional structured read and travel actions |
 
-The renderer uses one animation loop, clamps time steps, caps pixel ratio at 2, and caches vegetation sprites. Reduced-motion preferences suppress ambient movement. Inactive tabs pause stat depletion and audio. The data and survival logic have no React dependency.
+The 3D renderer uses one animation loop, instanced scenery, capped/adaptive pixel ratio and a single shadow map. It releases scene resources when changing habitats. The original renderer remains available for devices without WebGL2. Reduced-motion preferences suppress ambient movement. Inactive tabs pause stat depletion and audio. The data and survival logic have no React dependency.
+
+See `ASTRA_3D_HANDOFF.md` for exact drop-in Blender filenames, scale/orientation, animation names, budgets and prioritized art requests. `npm run assets` refreshes the asset index after adding files.
 
 ## Science and interpretation
 
