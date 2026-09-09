@@ -1,7 +1,4 @@
 {
-  "scale": 1,
-  "offsetY": 0,
-  "rotationY": 0,
   "periodIds": [
     "jurassic",
     "cretaceous",
@@ -9,9 +6,13 @@
   ],
   "biomes": [
     "jurassic",
-    "ice",
-    "early-forest"
+    "ice"
   ],
-  "triangles": 531,
-  "textureSize": 0
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "triangles": 1295,
+  "author": "Astra original art",
+  "source": "art/source/conifer.blend",
+  "materials": "vertex-painted PBR; no external textures"
 }

@@ -2,20 +2,22 @@
   "version": 1,
   "models": {
     "animals/allosaurus": {
-      "scale": 1,
-      "offsetY": 0,
-      "rotationY": 0,
       "periodIds": [
         "jurassic"
       ],
       "species": "Allosaurus",
-      "triangles": 2028,
-      "textureSize": 0,
       "clips": {
         "idle": "Idle",
         "walk": "Walk",
         "alert": "Alert"
       },
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 10160,
+      "author": "Astra original art",
+      "source": "art/source/allosaurus.blend",
+      "materials": "vertex-painted PBR; no external textures",
       "src": "/assets/animals/allosaurus.glb"
     },
     "animals/brachiosaurus": {
@@ -42,84 +44,91 @@
       "src": "/assets/animals/brachiosaurus.glb"
     },
     "animals/early-mammoth": {
-      "scale": 1,
-      "offsetY": 0,
-      "rotationY": 0,
       "periodIds": [
         "pleistocene"
       ],
       "species": "Early mammoth",
-      "triangles": 2134,
-      "textureSize": 0,
       "clips": {
         "idle": "Idle",
         "walk": "Walk",
         "graze": "Graze",
         "alert": "Alert"
       },
-      "src": "/assets/animals/early-mammoth.glb"
-    },
-    "animals/steppe-mammoth": {
       "scale": 1,
       "offsetY": 0,
       "rotationY": 0,
+      "triangles": 10104,
+      "author": "Astra original art",
+      "source": "art/source/early-mammoth.blend",
+      "materials": "vertex-painted PBR; no external textures",
+      "src": "/assets/animals/early-mammoth.glb"
+    },
+    "animals/steppe-mammoth": {
       "periodIds": [
         "million"
       ],
       "species": "Steppe mammoth",
-      "triangles": 2134,
-      "textureSize": 0,
       "clips": {
         "idle": "Idle",
         "walk": "Walk",
         "graze": "Graze",
         "alert": "Alert"
       },
-      "src": "/assets/animals/steppe-mammoth.glb"
-    },
-    "animals/woolly-mammoth": {
       "scale": 1,
       "offsetY": 0,
       "rotationY": 0,
+      "triangles": 10104,
+      "author": "Astra original art",
+      "source": "art/source/steppe-mammoth.blend",
+      "materials": "vertex-painted PBR; no external textures",
+      "src": "/assets/animals/steppe-mammoth.glb"
+    },
+    "animals/woolly-mammoth": {
       "periodIds": [
         "human-world"
       ],
       "species": "Woolly mammoth",
-      "triangles": 2302,
-      "textureSize": 0,
       "clips": {
         "idle": "Idle",
         "walk": "Walk",
         "graze": "Graze",
         "alert": "Alert"
       },
-      "src": "/assets/animals/woolly-mammoth.glb"
-    },
-    "characters/explorer": {
       "scale": 1,
       "offsetY": 0,
       "rotationY": 0,
-      "triangles": 1536,
-      "textureSize": 0,
+      "triangles": 10104,
+      "author": "Astra original art",
+      "source": "art/source/woolly-mammoth.blend",
+      "materials": "vertex-painted PBR; no external textures",
+      "src": "/assets/animals/woolly-mammoth.glb"
+    },
+    "characters/explorer": {
       "clips": {
         "idle": "Idle",
         "walk": "Walk",
         "run": "Run"
       },
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 2664,
+      "author": "Astra original art",
+      "source": "art/source/explorer.blend",
+      "materials": "vertex-painted PBR; no external textures",
       "src": "/assets/characters/explorer.glb"
     },
     "terrain/river-boulder": {
       "scale": 1,
       "offsetY": 0,
       "rotationY": 0,
-      "triangles": 328,
-      "textureSize": 0,
+      "triangles": 280,
+      "author": "Astra original art",
+      "source": "art/source/river-boulder.blend",
+      "materials": "vertex-painted PBR; no external textures",
       "src": "/assets/terrain/river-boulder.glb"
     },
     "vegetation/conifer": {
-      "scale": 1,
-      "offsetY": 0,
-      "rotationY": 0,
       "periodIds": [
         "jurassic",
         "cretaceous",
@@ -127,19 +136,25 @@
       ],
       "biomes": [
         "jurassic",
-        "ice",
-        "early-forest"
+        "ice"
       ],
-      "triangles": 531,
-      "textureSize": 0,
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 1295,
+      "author": "Astra original art",
+      "source": "art/source/conifer.blend",
+      "materials": "vertex-painted PBR; no external textures",
       "src": "/assets/vegetation/conifer.glb"
     },
     "vegetation/fern": {
       "scale": 1,
       "offsetY": 0,
       "rotationY": 0,
-      "triangles": 624,
-      "textureSize": 0,
+      "triangles": 1080,
+      "author": "Astra original art",
+      "source": "art/source/fern.blend",
+      "materials": "vertex-painted PBR; no external textures",
       "src": "/assets/vegetation/fern.glb"
     }
   }

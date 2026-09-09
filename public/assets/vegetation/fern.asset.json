@@ -2,6 +2,8 @@
   "scale": 1,
   "offsetY": 0,
   "rotationY": 0,
-  "triangles": 624,
-  "textureSize": 0
+  "triangles": 1080,
+  "author": "Astra original art",
+  "source": "art/source/fern.blend",
+  "materials": "vertex-painted PBR; no external textures"
 }

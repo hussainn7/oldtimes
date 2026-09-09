@@ -2,6 +2,8 @@
   "scale": 1,
   "offsetY": 0,
   "rotationY": 0,
-  "triangles": 328,
-  "textureSize": 0
+  "triangles": 280,
+  "author": "Astra original art",
+  "source": "art/source/river-boulder.blend",
+  "materials": "vertex-painted PBR; no external textures"
 }
