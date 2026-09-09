@@ -22,6 +22,27 @@
       },
       "src": "/assets/animals/brachiosaurus.glb"
     },
+    "characters/explorer": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 1536,
+      "textureSize": 0,
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "run": "Run"
+      },
+      "src": "/assets/characters/explorer.glb"
+    },
+    "terrain/river-boulder": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 328,
+      "textureSize": 0,
+      "src": "/assets/terrain/river-boulder.glb"
+    },
     "vegetation/conifer": {
       "scale": 1,
       "offsetY": 0,
@@ -39,6 +60,14 @@
       "triangles": 531,
       "textureSize": 0,
       "src": "/assets/vegetation/conifer.glb"
+    },
+    "vegetation/fern": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 624,
+      "textureSize": 0,
+      "src": "/assets/vegetation/fern.glb"
     }
   }
 }
