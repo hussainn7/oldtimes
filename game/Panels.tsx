@@ -155,10 +155,11 @@ export default function Panels({
             ) : g.panel === 'help' ? (
               <>
                 <div className="help-row">
-                  <kbd>A</kbd>
-                  <kbd>D</kbd>
+                  <kbd>WASD</kbd>
                   <p>
-                    Walk left or right. Arrow keys and touch controls work too.
+                    Explore with WASD or arrow keys. Hold Shift to move faster.
+                    Drag the world to look around; scroll to zoom. R recenters
+                    the camera. Touch arrows work too.
                   </p>
                 </div>
                 <div className="help-row">
@@ -254,9 +255,7 @@ export default function Panels({
         }}
       >
         <DialogContent className="encounter-dialog">
-          <span className="eyebrow">
-            {g.encounter?.category} · Encounter
-          </span>
+          <span className="eyebrow">{g.encounter?.category} · Encounter</span>
           <DialogTitle className="dialog-title">
             {g.encounter?.title}
           </DialogTitle>

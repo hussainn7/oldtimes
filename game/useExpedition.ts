@@ -32,6 +32,7 @@ export function useExpedition() {
       nearby: '',
     }),
     direction = useRef(0),
+    depth = useRef(0),
     eventCount = useRef(0),
     lastEvent = useRef(0),
     travelTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
@@ -103,6 +104,7 @@ export function useExpedition() {
     setStats(freshStats());
     setTraveling(true);
     direction.current = 0;
+    depth.current = 0;
     world.current = { x: 650, moving: false, distance: 0, nearby: '' };
     setDistance(0);
     setNearby('');
@@ -161,6 +163,7 @@ export function useExpedition() {
     setEncounter(e);
     setOutcome(null);
     direction.current = 0;
+    depth.current = 0;
     lastEvent.current = world.current.distance;
   }, [encounter, stats.health, period]);
   const explore = useCallback(
@@ -206,13 +209,16 @@ export function useExpedition() {
   const startWalking = (dir: number) => {
     if (!active) return;
     direction.current = dir;
-    const old = world.current.x;
-    world.current.x = Math.max(100, Math.min(6100, old + dir * 16));
-    world.current.distance += Math.abs(world.current.x - old);
-    explore(world.current.distance);
   };
   return {
     startWalking,
+    startDepth: (dir: number) => {
+      if (active) depth.current = dir;
+    },
+    stopDepth: () => {
+      depth.current = 0;
+    },
+    depth,
     stopWalking: () => {
       direction.current = 0;
     },
@@ -249,7 +255,13 @@ export function useExpedition() {
     retry: () => {
       setStats(freshStats());
       setPaused(false);
-      world.current.x = 650;
+      world.current = {
+        ...world.current,
+        x: 650,
+        z: 3,
+        moving: false,
+        nearby: '',
+      };
     },
     record,
   };

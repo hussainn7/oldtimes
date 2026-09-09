@@ -72,6 +72,8 @@ export interface Region {
 }
 export interface WorldHandle {
   x: number;
+  /** Depth in 3D metres; optional for legacy saves/renderers. */
+  z?: number;
   moving: boolean;
   distance: number;
   nearby: string;

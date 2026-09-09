@@ -1,5 +1,14 @@
 'use client';
-import { BookOpen, Pause, Play, Info, ArrowLeft, ArrowRight } from 'lucide-react';
+import {
+  BookOpen,
+  Pause,
+  Play,
+  Info,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react';
 import World from '@/game/World';
 import Timeline from '@/game/Timeline';
 import EarthMap from '@/game/Map';
@@ -29,6 +38,7 @@ export default function Game() {
         onExplore={g.explore}
         worldRef={g.world}
         direction={g.direction}
+        depth={g.depth}
         showLabels={g.started}
       />
       <div className="vignette" />
@@ -168,6 +178,32 @@ export default function Game() {
             <div className="walk-controls">
               <button
                 type="button"
+                aria-label="Walk forward"
+                onPointerDown={(e) => {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  g.startDepth(1);
+                }}
+                onPointerUp={g.stopDepth}
+                onPointerCancel={g.stopDepth}
+                onLostPointerCapture={g.stopDepth}
+              >
+                <ArrowUp size={16} />
+              </button>
+              <button
+                type="button"
+                aria-label="Walk backward"
+                onPointerDown={(e) => {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  g.startDepth(-1);
+                }}
+                onPointerUp={g.stopDepth}
+                onPointerCancel={g.stopDepth}
+                onLostPointerCapture={g.stopDepth}
+              >
+                <ArrowDown size={16} />
+              </button>
+              <button
+                type="button"
                 aria-label="Walk left"
                 onPointerDown={(e) => {
                   e.currentTarget.setPointerCapture(e.pointerId);
@@ -193,8 +229,7 @@ export default function Game() {
                 <ArrowRight size={16} />
               </button>
               <span>
-                <kbd>A</kbd>
-                <kbd>D</kbd>
+                <kbd>WASD</kbd>
               </span>
             </div>
             <button
@@ -203,9 +238,7 @@ export default function Game() {
               disabled={!g.active}
               onClick={g.trigger}
             >
-              <span>
-                {g.nearby ? 'Observe wildlife' : 'Investigate'}
-              </span>
+              <span>{g.nearby ? 'Observe wildlife' : 'Investigate'}</span>
               <kbd>E</kbd>
             </button>
             <button

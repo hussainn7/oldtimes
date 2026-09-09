@@ -412,7 +412,13 @@ footer {
   cursor: grab;
   touch-action: pan-x;
   user-select: none;
-  mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent);
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 2%,
+    #000 98%,
+    transparent
+  );
 }
 .timeline-strip:active {
   cursor: grabbing;
@@ -1482,5 +1488,180 @@ footer {
   }
   .period-title h1 {
     font-size: 48px;
+  }
+}
+
+/* Expedition viewport: quiet documentary framing, with touch-safe camera controls. */
+.world-3d {
+  touch-action: none;
+  outline: none;
+}
+.world-3d:active {
+  cursor: grabbing;
+}
+.wildlife-label {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  padding: 7px 12px;
+  border-top: 1px solid #dfca92aa;
+  background: #12231fba;
+  color: #f2e8cd;
+  font-size: 12px;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+.camera-hint {
+  position: absolute;
+  z-index: 2;
+  bottom: 178px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #efead4b3;
+  font-size: 12px;
+  text-shadow: 0 1px 6px #000;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.camera-hint span {
+  padding: 0 8px;
+  opacity: 0.55;
+}
+.render-status {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  font-size: 14px;
+  background: #122d27dd;
+  padding: 12px 18px;
+}
+.landing .vignette {
+  background:
+    linear-gradient(90deg, #061d25c9 0%, #061d2555 40%, transparent 72%),
+    linear-gradient(
+      0deg,
+      #071610bb,
+      transparent 25%,
+      transparent 75%,
+      #071a2055
+    );
+}
+.playing .vignette {
+  background: linear-gradient(
+    180deg,
+    #071a20b3,
+    transparent 40%,
+    transparent 65%,
+    #071610aa
+  );
+}
+.walk-controls button {
+  touch-action: none;
+  min-width: 38px;
+  min-height: 40px;
+}
+@media (max-width: 700px) {
+  .camera-hint {
+    display: none;
+  }
+  .wildlife-label {
+    font-size: 11px;
+    max-width: 250px;
+    white-space: normal;
+    text-align: center;
+  }
+  .walk-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 40px);
+    gap: 3px;
+  }
+  .walk-controls button {
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+  }
+  .walk-controls > span {
+    display: none;
+  }
+  .world-actions {
+    align-items: end;
+  }
+}
+@media (max-height: 600px) and (min-width: 651px) {
+  main {
+    min-height: 380px;
+  }
+  :root {
+    --hud-h: 82px;
+  }
+  .period-title {
+    top: 146px;
+  }
+  .period-title h1 {
+    font-size: 28px;
+  }
+  .period-title p,
+  .camera-hint,
+  .exploration,
+  .earth-map > span,
+  .earth-map small,
+  .map-label {
+    display: none;
+  }
+  .map-panel {
+    top: 150px;
+    width: 90px;
+  }
+  .earth-map svg {
+    width: 80px;
+  }
+  .region-picker select {
+    width: 90px;
+  }
+  .world-actions {
+    bottom: calc(var(--hud-h) + 10px);
+  }
+  .bottom-hud {
+    min-height: var(--hud-h);
+    padding: 10px 20px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .traveling .world-3d {
+    animation: habitat-arrival 1.1s ease-out both;
+  }
+  @keyframes habitat-arrival {
+    0%,
+    15% {
+      filter: brightness(0.15) saturate(0.3);
+    }
+    100% {
+      filter: brightness(1) saturate(1);
+    }
+  }
+}
+.period-title {
+  text-shadow: 0 2px 12px #09251ed9;
+}
+.era-jumps button,
+.timeline-strip button {
+  text-shadow: 0 1px 8px #031e19;
+}
+.timeline {
+  background: linear-gradient(180deg, #0a252a30, #0a252a55 65%, #0a252a00);
+}
+@media (max-width: 700px) {
+  .walk-controls {
+    grid-template-columns: repeat(2, 44px);
+  }
+  .walk-controls button {
+    min-width: 44px;
+    width: 44px;
+    min-height: 44px;
+    height: 44px;
   }
 }
