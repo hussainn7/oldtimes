@@ -1,12 +1,14 @@
 {
-  "scale": 1,
-  "offsetY": 0,
-  "rotationY": 0,
-  "triangles": 1536,
-  "textureSize": 0,
   "clips": {
     "idle": "Idle",
     "walk": "Walk",
     "run": "Run"
-  }
+  },
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "triangles": 2664,
+  "author": "Astra original art",
+  "source": "art/source/explorer.blend",
+  "materials": "vertex-painted PBR; no external textures"
 }
