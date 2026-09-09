@@ -2,8 +2,8 @@ import type { AnimalKind, Biome, Period, Species } from './types';
 
 /**
  * Asset registry for Earth Through Time.
- * Tomorrow (Astra): drop .glb/.gltf into public/assets/* and set paths here.
- * Until then, canvas/procedural renderers are the fallback.
+ * Drop .glb/.gltf into public/assets/*; the build indexes conventional paths.
+ * The 3D loader joins these species IDs with the generated asset manifest.
  */
 
 export type AssetRef = {
@@ -80,7 +80,7 @@ const slug = (name: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
-/** Build species registry from period data. Models optional until Astra ships. */
+/** Build species registry from period data. Models are optional; era membership always comes from gameplay data. */
 export function buildSpeciesRegistry(periods: Period[]): SpeciesAsset[] {
   const out: SpeciesAsset[] = [];
   const seen = new Map<string, SpeciesAsset>();
@@ -97,9 +97,10 @@ export function buildSpeciesRegistry(periods: Period[]): SpeciesAsset[] {
         id,
         periodIds: [p.id],
         habitat: p.vegetation,
-        danger: s.behavior === 'hunt' ? Math.min(100, p.danger + 15) : p.danger * 0.4,
+        danger:
+          s.behavior === 'hunt' ? Math.min(100, p.danger + 15) : p.danger * 0.4,
         model: {
-          src: undefined, // ponytail: procedural until Astra
+          src: undefined, // Built-in 3D silhouette until the manifest contains this ID.
           scale: kindScale[s.kind] * s.size,
           offsetY: 0,
           clips: ['idle', 'walk', s.behavior === 'flee' ? 'flee' : 'graze'],
@@ -112,7 +113,9 @@ export function buildSpeciesRegistry(periods: Period[]): SpeciesAsset[] {
   return out;
 }
 
-export function buildEnvironmentRegistry(periods: Period[]): EnvironmentAsset[] {
+export function buildEnvironmentRegistry(
+  periods: Period[],
+): EnvironmentAsset[] {
   return periods.map((p) => ({
     id: p.id,
     periodId: p.id,

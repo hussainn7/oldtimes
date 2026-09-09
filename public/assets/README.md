@@ -1,25 +1,14 @@
-# Assets — Earth Through Time
+# Astra assets
 
-Drop Astra / custom art here. The game falls back to procedural canvas art when a file is missing.
+The game runs immediately with built-in 3D terrain, characters, wildlife and plants. Blender models can replace the visual forms without changing gameplay.
 
-```
-animals/        species .glb/.gltf  (id = species slug, see game/assets.ts)
-vegetation/     plants, ferns, trees
-environments/   period scene shells (id = period.id from game/data.ts)
-terrain/        ground / rock kits
-characters/     explorer
-effects/        particles, weather
-maps/           optional map overlays
-ui/             icons, journal art
-fonts/          bundled type (already present)
-```
+- Use glTF 2.0 `.glb` (preferred) or `.gltf` with local dependencies.
+- Place models in these folders with lowercase kebab-case names.
+- Run `npm run assets` after adding files and refresh the page. Startup/build also runs this automatically.
+- Optional `name.asset.json` sidecars supply `scale`, `offsetY`, `rotationY`, clip aliases and era/biome/species metadata.
+- Missing/unlisted/corrupt models retain the built-in form; no speculative requests are made for unlisted files.
+- See `ASTRA_3D_HANDOFF.md` at the repository root for exact names, modelling specifications, export conventions and runtime limitations.
 
-## Wire-up
+Examples: `characters/explorer.glb`, `animals/brachiosaurus.glb`, `vegetation/conifer.glb`, `terrain/river-boulder.glb`, `environments/jurassic.glb`.
 
-1. Export model → `public/assets/animals/brachiosaurus.glb`
-2. In `game/assets.ts`, set `model.src` on that species (or rely on `animalAssetPath(id)`).
-3. Use `resolveExistingModel` from `game/loadAsset.ts` — `null` means keep procedural silhouette.
-4. Prefer Y-up, meters, origin at feet. Scale via `model.scale`.
-5. Clip names: `idle`, `walk`, `graze`, `flee`, `hunt`, `fly`, `swim`.
-
-Period IDs and fauna live in `game/data.ts`. Registries: `buildSpeciesRegistry`, `buildEnvironmentRegistry`.
+The generated `manifest.json` indexes real files only. Do not manually add model entries to it.
