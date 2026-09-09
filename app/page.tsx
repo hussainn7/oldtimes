@@ -213,7 +213,7 @@ export default function Game() {
               type="button"
               onClick={() => g.travel((g.index + 1) % periods.length)}
             >
-              {g.index === 27 ? 'Origins' : 'Next world'}
+              {g.index === 27 ? 'Back to start' : 'Next world'}
               <ArrowRight size={14} />
             </button>
           </div>
