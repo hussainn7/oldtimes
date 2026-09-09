@@ -1,619 +1,83 @@
 'use client';
-import { useEffect, useRef } from 'react';
-import { plantSprite } from './vegetation';
-import { drawAnimal } from './animals';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { Period, Region, WorldHandle } from './types';
-export const WORLD_WIDTH = 6200;
-const noise = (n: number) => {
-  const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return v - Math.floor(v);
-};
-export default function World({
-  period,
-  region,
-  active,
-  onExplore,
-  worldRef,
-  direction,
-  showLabels = true,
-}: {
+export { WORLD_WIDTH } from './three/terrain';
+const World2D = lazy(() => import('./World2D'));
+export interface WorldProps {
   period: Period;
   region: Region;
   active: boolean;
   onExplore: (distance: number) => void;
   worldRef: React.RefObject<WorldHandle>;
   direction: React.RefObject<number>;
+  depth: React.RefObject<number>;
   showLabels?: boolean;
-}) {
+}
+export default function World(props: WorldProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const props = useRef({ period, region, active, onExplore, showLabels });
+  const label = useRef<HTMLDivElement>(null);
+  const latest = useRef(props);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'fallback'>(
+    'loading',
+  );
   useEffect(() => {
-    props.current = { period, region, active, onExplore, showLabels };
-  }, [period, region, active, onExplore, showLabels]);
+    latest.current = props;
+  }, [props]);
   useEffect(() => {
-    const el = canvas.current!;
-    const c = el.getContext('2d')!;
-    let w = 0,
-      h = 0,
-      frame = 0,
-      last = 0,
-      time = 0,
-      camera = 0,
-      reported = 0,
-      periodId = '';
-    const keys = new Set<string>();
-    const resize = () => {
-      w = el.clientWidth;
-      h = el.clientHeight;
-      const d = Math.min(devicePixelRatio, 2);
-      el.width = w * d;
-      el.height = h * d;
-      c.setTransform(d, 0, 0, d, 0, 0);
-    };
-    const observer = new ResizeObserver(resize);
-    observer.observe(el);
-    resize();
-    const down = (e: KeyboardEvent) => {
-      if (
-        (e.target as HTMLElement).closest(
-          'input,select,[role="slider"],[role="dialog"],[contenteditable="true"]',
-        )
-      )
-        return;
-      if (['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(e.key)) {
-        if (!e.repeat && props.current.active) {
-          const state = worldRef.current;
-          const dir = ['d', 'arrowright'].includes(e.key.toLowerCase())
-            ? 1
-            : -1;
-          const nx = Math.max(
-            100,
-            Math.min(WORLD_WIDTH - 100, state.x + dir * 12),
+    let cancelled = false;
+    let dispose: (() => void) | undefined;
+    import('./three/expedition')
+      .then(({ createExpedition }) => {
+        if (cancelled) return;
+        try {
+          dispose = createExpedition(
+            canvas.current!,
+            label.current!,
+            () => latest.current,
+            () => setStatus('fallback'),
           );
-          state.distance += Math.abs(nx - state.x);
-          state.x = nx;
-          props.current.onExplore(state.distance);
+          setStatus('ready');
+        } catch {
+          setStatus('fallback');
         }
-        keys.add(e.key.toLowerCase());
-        e.preventDefault();
-      }
-    };
-    const up = (e: KeyboardEvent) => keys.delete(e.key.toLowerCase());
-    const blur = () => {
-      keys.clear();
-      direction.current = 0;
-    };
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    window.addEventListener('blur', blur);
-    const path = (points: number[][], fill: string) => {
-      c.beginPath();
-      points.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)));
-      c.closePath();
-      c.fillStyle = fill;
-      c.fill();
-    };
-    const ellipse = (
-      x: number,
-      y: number,
-      rx: number,
-      ry: number,
-      color: string,
-    ) => {
-      c.fillStyle = color;
-      c.beginPath();
-      c.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), 0, 0, Math.PI * 2);
-      c.fill();
-    };
-    const tree = (
-      x: number,
-      y: number,
-      s: number,
-      color: string,
-      fern = false,
-      seed = 0,
-    ) => {
-      const biome = props.current.period.biome;
-      const type = fern
-        ? 'fern'
-        : biome === 'savanna'
-          ? 'acacia'
-          : biome === 'modern' ||
-              (biome === 'flower' && props.current.period.mya < 60)
-            ? 'broadleaf'
-            : 'conifer';
-      const sprite = plantSprite(type, color, seed);
-      c.save();
-      c.translate(x, y);
-      c.transform(
-        1,
-        0,
-        Math.sin(
-          (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : time) *
-            0.45 +
-            x * 0.01,
-        ) * 0.008,
-        1,
-        0,
-        0,
-      );
-      c.drawImage(sprite, -100 * s, -260 * s, 200 * s, 262 * s);
-      c.restore();
-    };
-    function draw(now: number) {
-      const dt = Math.min((now - last) / 1000 || 0, 0.04);
-      last = now;
-      if (!document.hidden) time += dt;
-      const { period: p, region: r, active: a } = props.current;
-      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const t = reduced ? 0 : time;
-      const move = a
-        ? (keys.has('d') || keys.has('arrowright') ? 1 : 0) -
-            (keys.has('a') || keys.has('arrowleft') ? 1 : 0) ||
-          direction.current
-        : 0;
-      const state = worldRef.current;
-      const previous = state.x;
-      state.x = Math.max(
-        100,
-        Math.min(WORLD_WIDTH - 100, state.x + move * 180 * dt),
-      );
-      state.moving = move !== 0;
-      state.distance += Math.abs(state.x - previous);
-      if (state.distance - reported > 70) {
-        reported = state.distance;
-        props.current.onExplore(state.distance);
-      }
-      camera += (state.x - w * 0.39 - camera) * Math.min(1, dt * 3);
-      camera = Math.max(0, Math.min(WORLD_WIDTH - w, camera));
-      if (periodId !== p.id) {
-        reported = 0;
-        periodId = p.id;
-        camera = Math.max(0, state.x - w * 0.39);
-      }
-      const ground = h - 250;
-      const sky = c.createLinearGradient(0, 0, 0, h);
-      sky.addColorStop(0, p.sky[0]);
-      sky.addColorStop(1, p.sky[1]);
-      c.fillStyle = sky;
-      c.fillRect(0, 0, w, h);
-      const sunX = w * 0.72 - camera * 0.025;
-      const glow = c.createRadialGradient(
-        sunX,
-        h * 0.29,
-        5,
-        sunX,
-        h * 0.29,
-        h * 0.6,
-      );
-      glow.addColorStop(0, p.biome === 'volcanic' ? '#fa863155' : '#f3e6b23b');
-      glow.addColorStop(1, 'transparent');
-      c.fillStyle = glow;
-      c.fillRect(0, 0, w, h);
-      ellipse(
-        sunX,
-        h * 0.29,
-        32,
-        32,
-        p.biome === 'ash' ? '#aa977e' : '#f3e5bbaa',
-      );
-      c.save();
-      c.globalCompositeOperation = 'screen';
-      for (let i = 0; i < 2; i++) {
-        const beam = c.createLinearGradient(sunX, 0, sunX - 120 + i * 90, h);
-        beam.addColorStop(0, '#e1d9a70c');
-        beam.addColorStop(1, '#e1d9a700');
-        path(
-          [
-            [sunX - 12 + i * 18, h * 0.24],
-            [sunX + 4 + i * 18, h * 0.24],
-            [sunX - 80 + i * 100, h],
-            [sunX - 160 + i * 90, h],
-          ],
-          beam as unknown as string,
-        );
-      }
-      c.restore();
-      for (let i = 0; i < 7; i++) {
-        const cx = ((i * 240 + t * 3 - camera * 0.03) % (w + 300)) - 150;
-        c.globalAlpha = 0.045;
-        ellipse(
-          cx,
-          h * 0.27 + noise(i) * 60,
-          90 + noise(i) * 60,
-          13,
-          '#e0e7cd',
-        );
-        ellipse(cx + 40, h * 0.26 + noise(i) * 60, 55, 20, '#e0e7cd');
-      }
-      c.globalAlpha = 1;
-      if (['jurassic', 'flower', 'savanna', 'modern'].includes(p.biome)) {
-        for (let i = 0; i < 6; i++) {
-          const bx =
-            ((i * 210 + t * (8 + (i % 3)) - camera * 0.05) % (w + 80)) - 40;
-          const by = h * 0.32 + noise(i) * 40 + Math.sin(t * 0.6 + i) * 6;
-          c.globalAlpha = 0.2;
-          c.strokeStyle = '#c9d4b8';
-          c.lineWidth = 1.2;
-          c.beginPath();
-          c.moveTo(bx, by);
-          c.quadraticCurveTo(bx + 6, by - 4, bx + 12, by);
-          c.stroke();
-        }
-        c.globalAlpha = 1;
-      }
-      for (let l = 0; l < 4; l++) {
-        const pts: number[][] = [[0, h]];
-        for (let x = -100; x < w + 120; x += 60) {
-          const xx = x + camera * (0.08 + l * 0.08);
-          pts.push([
-            x,
-            h * (0.44 + l * 0.08) +
-              Math.sin(xx * 0.004 + l * 2) * h * 0.065 +
-              Math.sin(xx * 0.01 + l) * h * 0.035,
-          ]);
-        }
-        pts.push([w, h]);
-        path(pts, ['#7a989366', '#587d7866', '#365f5b88', p.land][l]);
-      }
-      if (p.biome === 'volcanic') {
-        path(
-          [
-            [w * 0.05, h * 0.65],
-            [w * 0.26, h * 0.3],
-            [w * 0.3, h * 0.31],
-            [w * 0.55, h * 0.7],
-          ],
-          '#463631',
-        );
-        path(
-          [
-            [w * 0.26, h * 0.3],
-            [w * 0.28, h * 0.4],
-            [w * 0.33, h * 0.43],
-            [w * 0.3, h * 0.31],
-          ],
-          '#e78a4c',
-        );
-        for (let i = 0; i < 7; i++) {
-          c.globalAlpha = 0.1;
-          ellipse(
-            w * 0.28 + Math.sin(i + t * 0.1) * 30,
-            h * 0.28 - i * 25,
-            35 + i * 8,
-            20 + i * 5,
-            '#a79380',
-          );
-        }
-        c.globalAlpha = 1;
-      }
-      if (p.biome === 'ice') {
-        path(
-          [
-            [0, h * 0.64],
-            [w * 0.22, h * 0.3],
-            [w * 0.4, h * 0.66],
-          ],
-          '#acc7cb',
-        );
-        path(
-          [
-            [w * 0.12, h * 0.47],
-            [w * 0.22, h * 0.3],
-            [w * 0.29, h * 0.44],
-            [w * 0.24, h * 0.41],
-            [w * 0.2, h * 0.46],
-            [w * 0.17, h * 0.42],
-          ],
-          '#e6eee5',
-        );
-        path(
-          [
-            [w * 0.6, h * 0.7],
-            [w * 0.85, h * 0.31],
-            [w, h * 0.56],
-            [w, h * 0.76],
-          ],
-          '#9ebfc4',
-        );
-      }
-      const water = p.biome === 'ocean' || r.id === 'coast';
-      if (water || p.biome === 'jurassic' || p.biome === 'swamp') {
-        c.fillStyle = p.biome === 'ocean' ? '#327e8399' : '#709f9280';
-        c.beginPath();
-        c.moveTo(w * 0.6 - camera * 0.1, h * 0.6);
-        c.bezierCurveTo(w * 0.9, h * 0.65, w * 0.3, h * 0.71, w * 0.65, h);
-        c.lineTo(w, h);
-        c.bezierCurveTo(
-          w * 0.6,
-          h * 0.72,
-          w,
-          h * 0.67,
-          w * 0.66 - camera * 0.1,
-          h * 0.6,
-        );
-        c.fill();
-        c.strokeStyle = '#c8ddd34a';
-        for (let i = 0; i < 26; i++) {
-          const y = h * 0.63 + i * 9;
-          const x = (noise(i) * w + t * (5 + (i % 3))) % w;
-          c.beginPath();
-          c.moveTo(x, y);
-          c.lineTo(x + 12 + i * 2, y);
-          c.stroke();
-        }
-      }
-      if (!['volcanic', 'ocean', 'ash', 'ice'].includes(p.biome)) {
-        for (let l = 0; l < 3; l++)
-          for (let i = 0; i < 65; i++) {
-            const x = i * 113 + noise(i) * 45 - camera * (0.28 + l * 0.21);
-            if (x < -200 || x > w + 200) continue;
-            const y = ground - 85 + l * 30 + noise(i + 8) * 25;
-            if (p.biome === 'desert' && i % 4 !== 0) continue;
-            if (p.biome === 'savanna' && i % 3 !== 0) continue;
-            tree(
-              x,
-              y,
-              0.22 + noise(i) * 0.28 + l * 0.14,
-              ['#476e5f', '#345a4a', '#234a3b'][l],
-              p.biome === 'swamp' && i % 3 !== 0,
-              i,
-            );
-          }
-      }
-      path(
-        [
-          [0, ground + 40],
-          [w * 0.2, ground + 29],
-          [w * 0.45, ground + 40],
-          [w * 0.75, ground + 25],
-          [w, ground + 20],
-          [w, h],
-          [0, h],
-        ],
-        p.biome === 'ice'
-          ? '#c0d5d2'
-          : p.biome === 'volcanic'
-            ? '#28282a'
-            : p.land,
-      );
-      if (!['volcanic', 'ocean', 'ice'].includes(p.biome)) {
-        c.fillStyle = '#b4b27b16';
-        c.beginPath();
-        c.moveTo(0, ground + 20);
-        c.bezierCurveTo(
-          w * 0.3,
-          ground + 5,
-          w * 0.6,
-          ground + 60,
-          w,
-          ground + 25,
-        );
-        c.lineTo(w, ground + 50);
-        c.bezierCurveTo(
-          w * 0.6,
-          ground + 80,
-          w * 0.3,
-          ground + 25,
-          0,
-          ground + 42,
-        );
-        c.fill();
-      }
-      for (let i = 0; i < 100; i++) {
-        const x = i * 100 - camera;
-        if (x < -150 || x > w + 150) continue;
-        const y = ground + 40 + noise(i) * h * 0.19;
-        ellipse(
-          x,
-          y,
-          12 + noise(i + 1) * 30,
-          3 + noise(i) * 8,
-          p.biome === 'ice' ? '#a4c0c3' : '#0d29293b',
-        );
-        if (p.biome === 'volcanic') {
-          path(
-            [
-              [x, y],
-              [x + 85, y + 10],
-              [x + 20, y + 20],
-              [x + 130, y + 27],
-            ],
-            '#e36e32',
-          );
-        } else if (p.biome !== 'ocean' && p.biome !== 'ash') {
-          c.strokeStyle = p.biome === 'ice' ? '#698789' : '#57836a';
-          for (let j = 0; j < 6; j++) {
-            c.beginPath();
-            c.moveTo(x + j * 3, y);
-            c.lineTo(
-              x + j * 3 + Math.sin(t + x) * 2 - 6,
-              y - 10 - noise(i + j) * 16,
-            );
-            c.stroke();
-          }
-        }
-      }
-      // Each species has a stable home range and a distinct proximity response.
-      let nearest = '',
-        nearDist = Infinity;
-      // Distant herd silhouettes give depth without extra interaction cost.
-      if (!['volcanic', 'ocean', 'ash'].includes(p.biome) && p.species.length) {
-        for (let i = 0; i < 5; i++) {
-          const dx = ((i * 980 + 200 - camera * 0.12) % (WORLD_WIDTH * 0.4)) + w * 0.1;
-          const dy = ground - 40 - noise(i + 3) * 20;
-          c.globalAlpha = 0.12;
-          c.fillStyle = '#0a1c18';
-          c.beginPath();
-          c.ellipse(dx, dy, 28 + noise(i) * 40, 10 + noise(i + 1) * 8, 0, 0, Math.PI * 2);
-          c.fill();
-        }
-        c.globalAlpha = 1;
-      }
-      p.species.forEach((species, i) => {
-        const flying = species.behavior === 'fly';
-        const home = 870 + i * 530;
-        const base = home + Math.sin(t * 0.08 + i) * 110;
-        const diff = state.x - base;
-        const alert = species.behavior === 'hunt' && Math.abs(diff) < 230;
-        const flee = species.behavior === 'flee' && Math.abs(diff) < 190;
-        const ax =
-          base +
-          (flee
-            ? -Math.sign(diff) * Math.min(180, (190 - Math.abs(diff)) * 2)
-            : alert
-              ? Math.sign(diff) * 45
-              : 0);
-        const face = flee
-          ? -Math.sign(diff)
-          : alert
-            ? Math.sign(diff)
-            : Math.cos(t * 0.08 + i) > 0
-              ? 1
-              : -1;
-        const swimming = p.biome === 'ocean';
-        const ay = flying
-          ? h * 0.39 + Math.sin(t * 0.3 + i) * 25
-          : swimming
-            ? ground - 25 + Math.sin(t * 0.7 + i) * 12
-            : ground + 9 + (i % 3) * 9;
-        const screenX = ax - camera;
-        if (Math.abs(ax - state.x) < nearDist && !flying) {
-          nearDist = Math.abs(ax - state.x);
-          nearest = species.name;
-        }
-        if (screenX > -240 && screenX < w + 240)
-          drawAnimal(
-            c,
-            species,
-            screenX,
-            ay,
-            reduced ? 0 : t,
-            face || 1,
-            alert,
-          );
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('fallback');
       });
-      state.nearby = nearDist < 230 ? nearest : '';
-      if (p.biome === 'ocean') {
-        c.fillStyle = '#70b3b52e';
-        c.fillRect(0, ground - 90, w, 95);
-        c.strokeStyle = '#d8e5d380';
-        for (let i = 0; i < 12; i++) {
-          c.beginPath();
-          const wx = (i * 105 + t * 8) % w;
-          c.moveTo(wx, ground - 70 + Math.sin(i) * 18);
-          c.lineTo(wx + 35, ground - 70 + Math.sin(i) * 18);
-          c.stroke();
-        }
-      }
-      if (p.biome === 'modern' && p.mya < 0.012) {
-        c.fillStyle = '#28494a66';
-        for (let i = 0; i < 20; i++) {
-          const bx = w * 0.72 + i * 17 - camera * 0.1;
-          c.fillRect(bx, h * 0.57 - noise(i) * 65, 12, 35 + noise(i) * 65);
-        }
-      }
-      // The explorer remains legible against every environment.
-      const px = state.x - camera,
-        py = ground + 23;
-      ellipse(px, py + 5, 17, 4, '#08222460');
-      c.save();
-      c.translate(px, py);
-      c.strokeStyle = '#182c2c';
-      c.lineWidth = 5;
-      c.lineCap = 'round';
-      for (const sign of [-1, 1]) {
-        c.beginPath();
-        c.moveTo(sign * 3, -17);
-        c.lineTo(sign * 5 + Math.sin(t * 10) * sign * (move ? 8 : 0), 0);
-        c.stroke();
-      }
-      c.fillStyle = '#dcc699';
-      c.fillRect(-8, -41, 16, 25);
-      c.fillStyle = '#546c5d';
-      c.fillRect(-12, -38, 6, 18);
-      ellipse(0, -48, 7, 8, '#dbc4a1');
-      ellipse(0, -52, 12, 3, '#ece0bd');
-      c.restore();
-      c.fillStyle = '#f3ecda';
-      c.font = '500 11px "Source Sans 3", sans-serif';
-      c.textAlign = 'center';
-      if (props.current.showLabels) {
-        c.globalAlpha = 0.85;
-        c.fillText('You', px, py - 68);
-        if (state.nearby && nearDist < 230) {
-          c.font = '400 10px "Source Sans 3", sans-serif';
-          c.fillStyle = '#e8d4a8';
-          c.globalAlpha = 0.9;
-          c.fillText(state.nearby, px, py - 84);
-        }
-      }
-      c.globalAlpha = 1;
-      // Foreground fronds frame the expedition without obscuring the walking path.
-      if (['jurassic', 'swamp', 'flower', 'modern'].includes(p.biome)) {
-        for (let i = 0; i < 10; i++) {
-          const fx = i * 650 - camera * 1.12;
-          if (fx > -240 && fx < w + 240) {
-            tree(fx, h + 55, 1.8 + noise(i) * 0.8, '#112f29', true, i);
-          }
-        }
-      }
-      if (p.biome === 'flower') {
-        for (let i = 0; i < 22; i++) {
-          const fx = i * 270 - camera;
-          const fy = ground + 80 + noise(i) * 40;
-          if (fx > 0 && fx < w) {
-            for (let k = 0; k < 5; k++)
-              ellipse(
-                fx + Math.cos(k * 1.26) * 3,
-                fy + Math.sin(k * 1.26) * 3,
-                2.6,
-                2.6,
-                '#d4b697',
-              );
-            ellipse(fx, fy, 1.7, 1.7, '#e2cb83');
-          }
-        }
-      }
-      if (r.id === 'north' || r.id === 'south') {
-        c.fillStyle = '#9dbcd11a';
-        c.fillRect(0, 0, w, h);
-      } else if (r.id === 'interior') {
-        c.fillStyle = '#ce9d4220';
-        c.fillRect(0, 0, w, h);
-      }
-      for (let i = 0; i < (p.biome === 'ice' ? 60 : 23); i++) {
-        const x = (noise(i + 70) * w + t * (3 + (i % 4))) % w,
-          y =
-            p.biome === 'ice'
-              ? (noise(i + 90) * h + t * 14) % h
-              : noise(i + 90) * h * 0.7;
-        c.globalAlpha = 0.15 + noise(i) * 0.25;
-        ellipse(
-          x,
-          y + Math.sin(t + i) * 8,
-          1.3,
-          1.3,
-          p.biome === 'volcanic' ? '#ffaf58' : '#e7e7c9',
-        );
-      }
-      c.globalAlpha = 1;
-      frame = requestAnimationFrame(draw);
-    }
-    frame = requestAnimationFrame(draw);
     return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener('keydown', down);
-      window.removeEventListener('keyup', up);
-      window.removeEventListener('blur', blur);
+      cancelled = true;
+      dispose?.();
     };
-  }, [worldRef, direction]);
+  }, []);
+  if (status === 'fallback')
+    return (
+      <>
+        <Suspense fallback={null}>
+          <World2D {...props} />
+        </Suspense>
+        <output className="render-status">
+          Compatibility view · 3D is unavailable on this device
+        </output>
+      </>
+    );
   return (
-    <canvas
-      ref={canvas}
-      className="world"
-      aria-label={`${period.name} landscape. Move with A and D or the arrow keys.`}
-    />
+    <>
+      <canvas
+        ref={canvas}
+        className="world world-3d"
+        tabIndex={0}
+        aria-label={`${props.period.name} 3D expedition. WASD or arrow keys to walk. Drag to look, scroll to zoom. E to investigate.`}
+      />
+      <div className="wildlife-label" ref={label} aria-hidden="true" />
+      {status === 'loading' && (
+        <output className="render-status">Preparing your expedition…</output>
+      )}
+      {props.showLabels && (
+        <div className="camera-hint">
+          WASD to explore <span>·</span> Drag to look <span>·</span> Scroll to
+          zoom <span>·</span> R to recenter
+        </div>
+      )}
+    </>
   );
 }
