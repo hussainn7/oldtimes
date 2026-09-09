@@ -8,7 +8,7 @@ The compact playable valley is 120 × 22 rendering metres, with terrain extendin
 
 The old expedition distance scale is deliberately retained: `WorldHandle.x` and distance use legacy route units (50 per rendering metre), while optional `WorldHandle.z` uses rendering metres. This preserves encounter frequency, timeline resets, progression, and saved journals. The distance display is expedition progress, not a physically surveyed valley length.
 
-No downloaded models or generated raster artwork are required. Current models are lightweight authored procedural 3D forms. They are stylized representatives, not anatomical reconstructions. The assets below replace them directly.
+No downloaded models or generated raster artwork are required. Hero assets for the priority list below are authored in Blender (`art/build_assets.py`, sources in `art/source/*.blend`) and exported as drop-in `.glb` files under `public/assets/`. Rebuild with `blender -b --python art/build_assets.py -- brachiosaurus conifer explorer …`. Unlisted species keep lightweight procedural forms from `game/three/models.ts`. The assets below replace them directly.
 
 ## Drop-in contract
 
@@ -61,6 +61,22 @@ Triangle budgets below are per asset, before instancing. These are production ta
 
 Verify exact species spelling against `game/data.ts` / `speciesAssets`: filenames come from lowercase species names with non-alphanumeric runs replaced by hyphens. The runtime uses all existing species memberships, including shared species across checkpoints. Do not rename gameplay species to accommodate a model filename.
 
+## Shipped hero art (priority 1–9)
+
+Blender vertex-painted PBR meshes with in-place animation clips where listed. Rebuild anytime via `art/build_assets.py`. Approximate shipped budgets:
+
+| Asset | Path | Tris (approx) | Notes |
+|---|---|---|---|
+| Brachiosaurus | `animals/brachiosaurus.glb` | ~13k | Skinned; Idle/Walk/Browse/Look |
+| Conifer | `vegetation/conifer.glb` | ~1.3k | Instanced; asymmetric layers |
+| Explorer | `characters/explorer.glb` | ~2.7k | Skinned; Idle/Walk/Run |
+| Fern | `vegetation/fern.glb` | ~1.1k | Instanced undergrowth |
+| River boulder | `terrain/river-boulder.glb` | ~280 | Instanced; runtime-scaled |
+| Early / steppe / woolly mammoth | `animals/*-mammoth.glb` | ~10k each | Skinned; Idle/Walk/Graze/Alert |
+| Allosaurus | `animals/allosaurus.glb` | ~10k | Skinned; Idle/Walk/Alert |
+
+Physical mobile-device profiling and further anatomical sculpt detail remain follow-up art work; the game runs without additional models beyond these.
+
 ## Environment landmarks after the hero pass
 
 Environment exports are **additive scenery**; they do not replace collision/terrain geometry. Each is placed at the world origin, metre-scaled. Author visible features in X=0…125 and Z=-35…-100, keeping the playable corridor X=2…122 / Z=-9…13 empty. Terrain and water remain procedural. Environment collision meshes are not imported. Use no cameras or lights in these exports.
@@ -89,4 +105,4 @@ For new vegetation *classes* beyond the existing keys, add the class selection o
 
 Run `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`. With the existing preview running at localhost:3000, run `node scripts/qa-3d-full.mjs` for every checkpoint, regions, interactions, responsive sizes, persistence, reduced motion, repeated transitions and context loss. Run `node scripts/qa-3d-assets.mjs` for valid glTF/GLB geometry and animations, missing/corrupt imports, static instancing and late-load disposal. Screenshots and the integration report are under `.qa-shots/`.
 
-See `QA.md` for the measured result and remaining limits. Physical mobile-device profiling and anatomically detailed Blender models remain follow-up art/hardware work; the game runs without them.
+See `QA.md` for the measured result and remaining limits. Priority hero meshes (brachiosaurus through allosaurus) now ship from the Blender art pipeline; remaining species and landmarks still use procedural forms until authored.
