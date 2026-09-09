@@ -19,9 +19,6 @@
       "src": "/assets/animals/allosaurus.glb"
     },
     "animals/brachiosaurus": {
-      "scale": 1,
-      "offsetY": 0,
-      "rotationY": 0,
       "periodIds": [
         "jurassic"
       ],
@@ -29,14 +26,19 @@
         "jurassic"
       ],
       "species": "Brachiosaurus",
-      "triangles": 3640,
-      "textureSize": 0,
       "clips": {
         "idle": "Idle",
         "walk": "Walk",
         "graze": "Browse",
         "alert": "Look"
       },
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "triangles": 13286,
+      "author": "Astra original art",
+      "source": "art/source/brachiosaurus.blend",
+      "materials": "vertex-painted PBR; no external textures",
       "src": "/assets/animals/brachiosaurus.glb"
     },
     "animals/early-mammoth": {
