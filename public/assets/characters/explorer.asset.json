@@ -1,0 +1,12 @@
+{
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "triangles": 1536,
+  "textureSize": 0,
+  "clips": {
+    "idle": "Idle",
+    "walk": "Walk",
+    "run": "Run"
+  }
+}
