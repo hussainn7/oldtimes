@@ -8,6 +8,6 @@ export function survival(p:Period,r:Region,s:Stats){
  const factors={air:Math.max(0,18-p.oxygen)*8,temperature:exposure,water:Math.max(0,70-p.water-r.water)*.4,food:(100-p.food)*.14,predators:(p.danger+r.danger)*(1-s.safety/140)*.35,condition:(300-s.health-s.water-s.energy)*.12};
  const risk=Object.values(factors).reduce((a,b)=>a+b,0);
  const days=Math.max(.1,Math.min(90,(110-risk)/5+s.knowledge*.06+s.shelter*.03));
- return {days,label:p.oxygen<10?'Under 5 minutes':p.oxygen<16?'Under 1 hour':temp>65?'Under 30 minutes':s.health<=0?'Expedition ended':`${Math.round(days)} ${Math.round(days)===1?'day':'days'}`,risk,factors,temperature:temp};
+ return {days,label:s.health<=0?'Expedition ended':p.oxygen<10?'Under 5 minutes':p.oxygen<16?'Under 1 hour':temp>65?'Under 30 minutes':`${Math.round(days)} ${Math.round(days)===1?'day':'days'}`,risk,factors,temperature:temp};
 }
 export function tick(s:Stats,p:Period,r:Region):Stats{const stress=Math.max(0,Math.abs(p.temperature+r.temperature-20)-10)/35;return applyChanges(s,{water:-.45-stress*.3,energy:-.3,health:-(p.oxygen<10?7:p.oxygen<16?3:p.temperature>65?5:s.water<15||s.energy<10?2:stress*.15),safety:-.08})}
