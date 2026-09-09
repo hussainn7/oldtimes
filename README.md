@@ -34,7 +34,7 @@ npm run build
 
 ## Architecture
 
-React + TypeScript, Vite/Vinext, HTML Canvas, SVG, Base UI primitives, Lucide icons. No external art, font, or audio requests are needed.
+React + TypeScript, Vite/Vinext, HTML Canvas, SVG, Base UI primitives, Lucide icons. Fonts ship locally from `public/assets/fonts`. No external art or audio requests are needed.
 
 | Module | Responsibility |
 | --- | --- |
