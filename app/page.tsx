@@ -29,6 +29,7 @@ export default function Game() {
         onExplore={g.explore}
         worldRef={g.world}
         direction={g.direction}
+        showLabels={g.started}
       />
       <div className="vignette" />
 

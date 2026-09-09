@@ -10,7 +10,7 @@ export function drawAnimal(
   alert: boolean,
 ) {
   c.save();
-  c.translate(x, y);
+  c.translate(x, y + (s.behavior === 'graze' ? Math.sin(t * 1.2) * 1.5 : 0));
   c.scale(s.size * facing, s.size);
   c.fillStyle = s.color;
   c.strokeStyle = s.color;
@@ -368,9 +368,14 @@ export function drawAnimal(
   }
   if (alert) {
     c.fillStyle = '#ebca8a';
-    c.font = 'bold 17px Arial';
-    c.textAlign = 'center';
-    c.fillText('!', 0, s.kind === 'sauropod' ? -210 : -115);
+    c.beginPath();
+    c.arc(0, s.kind === 'sauropod' ? -205 : -110, 4, 0, Math.PI * 2);
+    c.fill();
+    c.globalAlpha = 0.35;
+    c.beginPath();
+    c.arc(0, s.kind === 'sauropod' ? -205 : -110, 9, 0, Math.PI * 2);
+    c.fill();
+    c.globalAlpha = 1;
   }
   c.restore();
 }

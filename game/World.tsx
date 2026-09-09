@@ -15,6 +15,7 @@ export default function World({
   onExplore,
   worldRef,
   direction,
+  showLabels = true,
 }: {
   period: Period;
   region: Region;
@@ -22,12 +23,13 @@ export default function World({
   onExplore: (distance: number) => void;
   worldRef: React.RefObject<WorldHandle>;
   direction: React.RefObject<number>;
+  showLabels?: boolean;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const props = useRef({ period, region, active, onExplore });
+  const props = useRef({ period, region, active, onExplore, showLabels });
   useEffect(() => {
-    props.current = { period, region, active, onExplore };
-  }, [period, region, active, onExplore]);
+    props.current = { period, region, active, onExplore, showLabels };
+  }, [period, region, active, onExplore, showLabels]);
   useEffect(() => {
     const el = canvas.current!;
     const c = el.getContext('2d')!;
@@ -420,6 +422,19 @@ export default function World({
       // Each species has a stable home range and a distinct proximity response.
       let nearest = '',
         nearDist = Infinity;
+      // Distant herd silhouettes give depth without extra interaction cost.
+      if (!['volcanic', 'ocean', 'ash'].includes(p.biome) && p.species.length) {
+        for (let i = 0; i < 5; i++) {
+          const dx = ((i * 980 + 200 - camera * 0.12) % (WORLD_WIDTH * 0.4)) + w * 0.1;
+          const dy = ground - 40 - noise(i + 3) * 20;
+          c.globalAlpha = 0.12;
+          c.fillStyle = '#0a1c18';
+          c.beginPath();
+          c.ellipse(dx, dy, 28 + noise(i) * 40, 10 + noise(i + 1) * 8, 0, 0, Math.PI * 2);
+          c.fill();
+        }
+        c.globalAlpha = 1;
+      }
       p.species.forEach((species, i) => {
         const flying = species.behavior === 'fly';
         const home = 870 + i * 530;
@@ -508,13 +523,15 @@ export default function World({
       c.fillStyle = '#f3ecda';
       c.font = '500 11px "Source Sans 3", sans-serif';
       c.textAlign = 'center';
-      c.globalAlpha = 0.85;
-      c.fillText('You', px, py - 68);
-      if (state.nearby && nearDist < 230) {
-        c.font = '400 10px "Source Sans 3", sans-serif';
-        c.fillStyle = '#e8d4a8';
-        c.globalAlpha = 0.9;
-        c.fillText(state.nearby, px, py - 84);
+      if (props.current.showLabels) {
+        c.globalAlpha = 0.85;
+        c.fillText('You', px, py - 68);
+        if (state.nearby && nearDist < 230) {
+          c.font = '400 10px "Source Sans 3", sans-serif';
+          c.fillStyle = '#e8d4a8';
+          c.globalAlpha = 0.9;
+          c.fillText(state.nearby, px, py - 84);
+        }
       }
       c.globalAlpha = 1;
       // Foreground fronds frame the expedition without obscuring the walking path.

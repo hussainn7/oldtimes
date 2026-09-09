@@ -48,7 +48,7 @@
   --font-meta: 'Source Sans 3', ui-monospace, monospace;
   --r: 2px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --hud-h: 118px;
+  --hud-h: 104px;
   color-scheme: dark;
   --background: var(--surface);
   --foreground: var(--ink);
@@ -352,9 +352,9 @@ footer {
 /* ——— Timeline ——— */
 .timeline {
   position: absolute;
-  top: 58px;
+  top: 52px;
   left: 28px;
-  right: 28px;
+  right: 200px;
   z-index: 4;
 }
 .timeline-top {
@@ -508,9 +508,9 @@ footer {
   position: absolute;
   z-index: 3;
   left: 32px;
-  top: 168px;
+  top: 148px;
   pointer-events: none;
-  max-width: min(52%, 520px);
+  max-width: min(48%, 480px);
   animation: rise-in 0.65s var(--ease);
 }
 .period-title .eyebrow {
@@ -533,8 +533,8 @@ footer {
 .map-panel {
   position: absolute;
   right: 28px;
-  top: 168px;
-  width: 168px;
+  top: 148px;
+  width: 148px;
   z-index: 3;
   text-align: center;
   animation: rise-in 0.7s var(--ease);
@@ -547,7 +547,7 @@ footer {
   margin-bottom: 4px;
 }
 .earth-map svg {
-  width: 148px;
+  width: 132px;
   display: block;
   margin: 0 auto;
   filter: drop-shadow(0 8px 20px #04151244);
@@ -587,7 +587,7 @@ footer {
   padding: 6px 22px 6px 8px;
   font: 11px var(--font-ui);
   border-radius: var(--r);
-  width: 148px;
+  width: 132px;
   height: auto;
   cursor: pointer;
 }
@@ -628,7 +628,7 @@ footer {
 /* ——— World actions ——— */
 .world-actions {
   position: absolute;
-  bottom: calc(var(--hud-h) + 16px);
+  bottom: calc(var(--hud-h) + 28px);
   left: 28px;
   right: 28px;
   z-index: 4;
@@ -701,12 +701,12 @@ footer {
   right: 0;
   z-index: 3;
   min-height: var(--hud-h);
-  padding: 16px 28px 18px;
+  padding: 12px 28px 14px;
   display: grid;
   grid-template-columns: 1fr 1.15fr 1.1fr;
   gap: 28px;
   align-items: center;
-  background: linear-gradient(180deg, transparent, #0a1e1acc 28%, #0c211eef);
+  background: linear-gradient(180deg, transparent, #0a1e1acc 22%, #0c211ef5);
   border-top: 0;
 }
 .bottom-hud .eyebrow {
@@ -1343,9 +1343,12 @@ footer {
     width: 96px;
     padding: 4px 14px 4px 4px;
   }
+  .period-title p {
+    display: none;
+  }
   .exploration {
     left: 14px;
-    top: 248px;
+    top: 220px;
     font-size: 10px;
   }
   .world-actions {

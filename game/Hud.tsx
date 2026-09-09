@@ -54,7 +54,9 @@ export default function Hud({
       </div>
       <button className="survival" onClick={onInfo} type="button">
         <span className="eyebrow">Survival outlook</span>
-        <strong>~{estimate.label.replace(/^~/, '')}</strong>
+        <strong>
+          {/^\d/.test(estimate.label) ? `~${estimate.label}` : estimate.label}
+        </strong>
         <div className="survival-factors" aria-hidden="true">
           {outlook.map(({ key, label }) => {
             const tone = factorTone(estimate.factors[key]);
