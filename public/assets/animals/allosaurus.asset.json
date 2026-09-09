@@ -1,0 +1,16 @@
+{
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "periodIds": [
+    "jurassic"
+  ],
+  "species": "Allosaurus",
+  "triangles": 2028,
+  "textureSize": 0,
+  "clips": {
+    "idle": "Idle",
+    "walk": "Walk",
+    "alert": "Alert"
+  }
+}
