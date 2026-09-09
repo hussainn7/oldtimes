@@ -1,4 +1,26 @@
 {
   "version": 1,
-  "models": {}
+  "models": {
+    "animals/brachiosaurus": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "periodIds": [
+        "jurassic"
+      ],
+      "biomes": [
+        "jurassic"
+      ],
+      "species": "Brachiosaurus",
+      "triangles": 3640,
+      "textureSize": 0,
+      "clips": {
+        "idle": "Idle",
+        "walk": "Walk",
+        "graze": "Browse",
+        "alert": "Look"
+      },
+      "src": "/assets/animals/brachiosaurus.glb"
+    }
+  }
 }
