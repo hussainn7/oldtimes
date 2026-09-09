@@ -199,16 +199,16 @@ export default function World({
       );
       c.save();
       c.globalCompositeOperation = 'screen';
-      for (let i = 0; i < 4; i++) {
-        const beam = c.createLinearGradient(sunX, 0, sunX - 170 + i * 100, h);
-        beam.addColorStop(0, '#e1d9a711');
+      for (let i = 0; i < 2; i++) {
+        const beam = c.createLinearGradient(sunX, 0, sunX - 120 + i * 90, h);
+        beam.addColorStop(0, '#e1d9a70c');
         beam.addColorStop(1, '#e1d9a700');
         path(
           [
-            [sunX - 20 + i * 25, h * 0.22],
-            [sunX + 5 + i * 25, h * 0.22],
-            [sunX - 100 + i * 130, h],
-            [sunX - 200 + i * 120, h],
+            [sunX - 12 + i * 18, h * 0.24],
+            [sunX + 4 + i * 18, h * 0.24],
+            [sunX - 80 + i * 100, h],
+            [sunX - 160 + i * 90, h],
           ],
           beam as unknown as string,
         );

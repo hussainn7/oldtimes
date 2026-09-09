@@ -47,14 +47,12 @@ export default function Timeline({
   return (
     <nav className="timeline" aria-label="Travel through Earth's history">
       <div className="timeline-top">
-        <span className="eyebrow">Deep time</span>
         <div className="era-jumps">
           {ERA_JUMPS.map(([name, i]) => (
             <button
               key={name}
               type="button"
               aria-current={
-                index === i ||
                 (name === 'Origins' && index < 6) ||
                 (name === 'Paleozoic' && index >= 6 && index < 12) ||
                 (name === 'Mesozoic' && index >= 12 && index < 17) ||
@@ -69,7 +67,6 @@ export default function Timeline({
             </button>
           ))}
         </div>
-        <span className="timeline-note">4.5 billion years · 28 worlds</span>
       </div>
       <div className="timeline-rail" aria-hidden="true" />
       <div

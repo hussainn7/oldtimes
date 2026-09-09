@@ -354,21 +354,21 @@ footer {
   position: absolute;
   top: 52px;
   left: 28px;
-  right: 200px;
+  right: 28px;
   z-index: 4;
 }
 .timeline-top {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   margin-bottom: 2px;
 }
 .era-jumps {
   display: flex;
   gap: 4px;
-  flex: 1;
   justify-content: center;
+  flex-wrap: wrap;
 }
 .era-jumps button {
   padding: 4px 10px;
@@ -628,14 +628,18 @@ footer {
 /* ——— World actions ——— */
 .world-actions {
   position: absolute;
-  bottom: calc(var(--hud-h) + 28px);
+  bottom: calc(var(--hud-h) + 36px);
   left: 28px;
   right: 28px;
-  z-index: 4;
+  z-index: 5;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  pointer-events: none;
+}
+.world-actions > * {
+  pointer-events: auto;
 }
 .walk-controls {
   display: flex;
@@ -665,15 +669,18 @@ footer {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface-glass);
+  border: 0;
+  border-bottom: 1px solid var(--accent);
+  background: transparent;
   font-size: 12px;
   color: var(--ink);
-  padding: 10px 16px;
+  padding: 8px 4px;
+  border-radius: 0;
 }
 .investigate:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--accent-soft);
   color: var(--accent-soft);
+  background: transparent;
 }
 .investigate kbd {
   font-size: 10px;
@@ -804,16 +811,16 @@ footer {
 .survival-factors {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  gap: 2px 14px;
   font-size: 9px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-faint);
 }
 .survival-factors b {
   font-weight: 500;
   color: var(--ink-muted);
-  margin-left: 4px;
+  margin-left: 5px;
 }
 .survival-factors .warn b {
   color: var(--danger);
@@ -821,15 +828,8 @@ footer {
 .survival-factors .ok b {
   color: var(--good);
 }
-.survival > .eyebrow + strong + .survival-factors + small,
 .survival small.disclaimer {
-  display: block;
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-top: 8px;
-  opacity: 0.7;
+  display: none;
 }
 
 /* ——— Dialogs ——— */
@@ -1295,6 +1295,7 @@ footer {
     display: none;
   }
   .era-jumps {
+    gap: 0;
     justify-content: space-between;
     width: 100%;
   }
@@ -1307,24 +1308,24 @@ footer {
   }
   .period-title {
     left: 14px;
-    top: 128px;
-    max-width: 68%;
+    top: 118px;
+    max-width: 62%;
   }
   .period-title h1 {
-    font-size: 28px;
-    margin: 8px 0;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 6px 0;
   }
   .period-title p {
-    font-size: 11px;
-    max-width: 28ch;
+    display: none;
   }
   .period-title .eyebrow {
     font-size: 8px;
   }
   .map-panel {
-    top: 128px;
+    top: 118px;
     right: 10px;
-    width: 96px;
+    width: 84px;
   }
   .map-label {
     font-size: 7px;

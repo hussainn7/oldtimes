@@ -18,7 +18,7 @@ fonts/          bundled type (already present)
 
 1. Export model → `public/assets/animals/brachiosaurus.glb`
 2. In `game/assets.ts`, set `model.src` on that species (or rely on `animalAssetPath(id)`).
-3. Loaders should call `resolveModel(ref)` — `null` means keep procedural silhouette.
+3. Use `resolveExistingModel` from `game/loadAsset.ts` — `null` means keep procedural silhouette.
 4. Prefer Y-up, meters, origin at feet. Scale via `model.scale`.
 5. Clip names: `idle`, `walk`, `graze`, `flee`, `hunt`, `fly`, `swim`.
 
