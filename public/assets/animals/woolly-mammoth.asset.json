@@ -1,17 +1,19 @@
 {
-  "scale": 1,
-  "offsetY": 0,
-  "rotationY": 0,
   "periodIds": [
     "human-world"
   ],
   "species": "Woolly mammoth",
-  "triangles": 2302,
-  "textureSize": 0,
   "clips": {
     "idle": "Idle",
     "walk": "Walk",
     "graze": "Graze",
     "alert": "Alert"
-  }
+  },
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "triangles": 10104,
+  "author": "Astra original art",
+  "source": "art/source/woolly-mammoth.blend",
+  "materials": "vertex-painted PBR; no external textures"
 }
