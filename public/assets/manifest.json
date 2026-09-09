@@ -21,6 +21,24 @@
         "alert": "Look"
       },
       "src": "/assets/animals/brachiosaurus.glb"
+    },
+    "vegetation/conifer": {
+      "scale": 1,
+      "offsetY": 0,
+      "rotationY": 0,
+      "periodIds": [
+        "jurassic",
+        "cretaceous",
+        "triassic"
+      ],
+      "biomes": [
+        "jurassic",
+        "ice",
+        "early-forest"
+      ],
+      "triangles": 531,
+      "textureSize": 0,
+      "src": "/assets/vegetation/conifer.glb"
     }
   }
 }
