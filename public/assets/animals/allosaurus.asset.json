@@ -1,16 +1,18 @@
 {
-  "scale": 1,
-  "offsetY": 0,
-  "rotationY": 0,
   "periodIds": [
     "jurassic"
   ],
   "species": "Allosaurus",
-  "triangles": 2028,
-  "textureSize": 0,
   "clips": {
     "idle": "Idle",
     "walk": "Walk",
     "alert": "Alert"
-  }
+  },
+  "scale": 1,
+  "offsetY": 0,
+  "rotationY": 0,
+  "triangles": 10160,
+  "author": "Astra original art",
+  "source": "art/source/allosaurus.blend",
+  "materials": "vertex-painted PBR; no external textures"
 }
