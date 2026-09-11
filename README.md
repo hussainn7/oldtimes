@@ -65,7 +65,9 @@ See `ASTRA_3D_HANDOFF.md` for exact drop-in Blender filenames, scale/orientation
 
 This is a stylized game, not a scientific simulation. Checkpoints represent selected ecosystems within broad eras, not exact geological boundaries. Organisms are regional representatives and are not claimed to coexist across every selectable region. Species shapes, temperatures and oxygen concentrations are simplified game parameters. The map communicates broad continental assembly and breakup; its shapes and location marker are schematic, especially in deep time.
 
-Survival estimates are fictional gameplay outputs, not measured predictions or real-world advice. They account for air, heat/cold, resources, predators, condition, shelter, region, and knowledge.
+The time-remaining readout forecasts active play time by replaying the same 1.5-second updates as the game until health reaches zero. It assumes no new choices, supplies, or travel; pausing, reading, and hidden tabs stop depletion. Air, regional temperature, resources, danger, condition, shelter, and knowledge affect the shared model. This is not a historical human life expectancy or a measured real-world survival prediction.
+
+Each checkpoint introduces a distinct historical discovery. Encounter IDs are saved on this device and are not offered again, even after travel or a reload; wildlife observations are unique per species. Exhausted encounter pools do not restart. The Next world button visits an undiscovered checkpoint and stops once the atlas is complete; the timeline still allows intentional revisits.
 
 References:
 

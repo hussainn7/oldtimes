@@ -1,12 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { periods, regions, shortDate } from '../.test-build/data.js';
-import { events, eligibleEvents } from '../.test-build/events.js';
+import {
+  events,
+  eligibleEvents,
+  historicalDiscovery,
+  nextEncounter,
+} from '../.test-build/events.js';
 import {
   freshStats,
   applyChanges,
   survival,
   tick,
+  TICK_MS,
 } from '../.test-build/survival.js';
 test('all checkpoints have unique descending dates and playable content', () => {
   assert.equal(periods.length, 28);
@@ -48,10 +54,86 @@ test('survival responds to supplies, shelter, location and breathable air', () =
     survival(j, regions[0], applyChanges(base, { shelter: 50, knowledge: 40 }))
       .days > survival(j, regions[0], base).days,
   );
-  assert.match(survival(periods[0], regions[0], base).label, /minutes/);
+  assert.ok(survival(periods[0], regions[0], base).seconds < 60);
   assert.equal(
     survival(periods[0], regions[0], { ...base, health: 0 }).label,
     'Expedition ended',
+  );
+});
+test('remaining time matches actual depletion in every world and region', () => {
+  for (const p of periods)
+    for (const r of regions) {
+      for (const initial of [
+        freshStats(),
+        { ...freshStats(), health: 28, water: 8, shelter: 60, knowledge: 45 },
+      ]) {
+        const estimate = survival(p, r, initial);
+        let state = initial;
+        let elapsed = 0;
+        while (state.health > 0 && elapsed < 20000) {
+          state = tick(state, p, r);
+          elapsed += TICK_MS / 1000;
+        }
+        assert.equal(state.health, 0);
+        assert.equal(estimate.seconds, elapsed, `${p.id}/${r.id}`);
+        assert.ok(Math.abs(estimate.days * 86400 - estimate.seconds) < 1e-9);
+        const afterTick = survival(p, r, tick(initial, p, r));
+        assert.equal(
+          afterTick.seconds,
+          Math.max(0, estimate.seconds - TICK_MS / 1000),
+        );
+      }
+    }
+});
+test('regional heat and low reserves shorten the forecast; ended means zero', () => {
+  const mild = { ...periods[13], temperature: 60, oxygen: 21 };
+  assert.ok(
+    survival(mild, regions[1], freshStats()).seconds <
+      survival(mild, regions[0], freshStats()).seconds,
+  );
+  const low = { ...freshStats(), health: 20, water: 0, energy: 0 };
+  assert.ok(
+    survival(periods[13], regions[0], low).seconds <
+      survival(periods[13], regions[0], freshStats()).seconds,
+  );
+  assert.equal(survival(mild, regions[0], { ...low, health: 0 }).seconds, 0);
+});
+test('every era introduces a unique historical discovery before generic encounters', () => {
+  const discoveries = periods.map(historicalDiscovery);
+  assert.equal(new Set(discoveries.map((e) => e.id)).size, periods.length);
+  assert.equal(new Set(discoveries.map((e) => e.body)).size, periods.length);
+  periods.forEach((p) =>
+    assert.equal(nextEncounter(p, regions[0], []).id, `history:${p.id}`),
+  );
+});
+test('encounters never repeat across eras, reloads, exhausted pools or nearby wildlife', () => {
+  let seen = [];
+  for (const p of [...periods, ...periods]) {
+    for (const nearby of ['', ...p.species.map((s) => s.name)]) {
+      let event;
+      while ((event = nextEncounter(p, regions[0], seen, nearby, () => 0.6))) {
+        assert.ok(!seen.includes(event.id));
+        seen = JSON.parse(JSON.stringify([...seen, event.id]));
+      }
+      assert.equal(nextEncounter(p, regions[0], seen, nearby), null);
+    }
+  }
+  assert.equal(new Set(seen).size, seen.length);
+});
+test('encounters respect local climate, flying species and extinction cause', () => {
+  const jurassic = periods[13];
+  assert.ok(!eligibleEvents(jurassic, regions[0]).some((e) => e.id === 'heat'));
+  assert.ok(eligibleEvents(jurassic, regions[1]).some((e) => e.id === 'heat'));
+  assert.ok(
+    !eligibleEvents(periods[27], regions[0]).some((e) => e.id === 'cold'),
+  );
+  const volcanic = eligibleEvents(periods.find((p) => p.id === 'great-dying'));
+  assert.ok(volcanic.some((e) => e.id === 'volcanic-aftermath'));
+  assert.ok(!volcanic.some((e) => e.id === 'ashfall'));
+  assert.ok(
+    eligibleEvents(periods.find((p) => p.id === 'impact')).some(
+      (e) => e.id === 'ashfall',
+    ),
   );
 });
 test('every event choice stays in bounds and has a consequence', () => {

@@ -1,3 +1,13 @@
+# Interface and expedition updates — 2026-09-11
+
+- Reduced landscape captions and duplicate control text; enlarged timeline, region, and status labels. Historical details remain in field notes and discoveries.
+- Remaining time is an active-play forecast using the same depletion updates as gameplay, not a real-world lifespan. Regression checks compare forecast and actual depletion across all 28 checkpoints × 5 regions, for fresh and depleted supplies, including lethal conditions and zero health.
+- Historical discoveries are unique per checkpoint. Seen event IDs persist across travel and reload; exhausted pools stay exhausted. Next world selects an unvisited checkpoint and stops when all worlds are visited.
+- Browser checks completed all 28 historical discoveries and verified the disabled Atlas complete state. A reload preserved the journal and offered a different encounter. Desktop (1440×900) and phone (390×844) bounds fit the viewport; movement controls retain 44px touch targets. No browser console errors were observed.
+- Corrected timeline era jumps and differentiated volcanic extinction from asteroid aftermath. References remain accessible in Science & credits.
+
+The earlier renderer validation below is retained as historical context; it is not a claim that every previous graphics benchmark was rerun for this update.
+
 # Astra 3D validation — 2026-09-09
 
 ## Result
