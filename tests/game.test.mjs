@@ -12,7 +12,7 @@ import {
   applyChanges,
   survival,
   tick,
-  TICK_MS,
+  SURVIVAL_STEP_HOURS,
 } from '../.test-build/survival.js';
 test('all checkpoints have unique descending dates and playable content', () => {
   assert.equal(periods.length, 28);
@@ -54,13 +54,13 @@ test('survival responds to supplies, shelter, location and breathable air', () =
     survival(j, regions[0], applyChanges(base, { shelter: 50, knowledge: 40 }))
       .days > survival(j, regions[0], base).days,
   );
-  assert.ok(survival(periods[0], regions[0], base).seconds < 60);
+  assert.ok(survival(periods[0], regions[0], base).hours < 24);
   assert.equal(
     survival(periods[0], regions[0], { ...base, health: 0 }).label,
-    'Expedition ended',
+    'No survival time',
   );
 });
-test('remaining time matches actual depletion in every world and region', () => {
+test('survival estimate matches the model in every world and region', () => {
   for (const p of periods)
     for (const r of regions) {
       for (const initial of [
@@ -69,18 +69,18 @@ test('remaining time matches actual depletion in every world and region', () => 
       ]) {
         const estimate = survival(p, r, initial);
         let state = initial;
-        let elapsed = 0;
-        while (state.health > 0 && elapsed < 20000) {
+        let hours = 0;
+        while (state.health > 0 && hours < 20000) {
           state = tick(state, p, r);
-          elapsed += TICK_MS / 1000;
+          hours += SURVIVAL_STEP_HOURS;
         }
         assert.equal(state.health, 0);
-        assert.equal(estimate.seconds, elapsed, `${p.id}/${r.id}`);
-        assert.ok(Math.abs(estimate.days * 86400 - estimate.seconds) < 1e-9);
+        assert.equal(estimate.hours, hours, `${p.id}/${r.id}`);
+        assert.ok(Math.abs(estimate.days * 24 - estimate.hours) < 1e-9);
         const afterTick = survival(p, r, tick(initial, p, r));
         assert.equal(
-          afterTick.seconds,
-          Math.max(0, estimate.seconds - TICK_MS / 1000),
+          afterTick.hours,
+          Math.max(0, estimate.hours - SURVIVAL_STEP_HOURS),
         );
       }
     }
@@ -88,15 +88,15 @@ test('remaining time matches actual depletion in every world and region', () => 
 test('regional heat and low reserves shorten the forecast; ended means zero', () => {
   const mild = { ...periods[13], temperature: 60, oxygen: 21 };
   assert.ok(
-    survival(mild, regions[1], freshStats()).seconds <
-      survival(mild, regions[0], freshStats()).seconds,
+    survival(mild, regions[1], freshStats()).hours <
+      survival(mild, regions[0], freshStats()).hours,
   );
   const low = { ...freshStats(), health: 20, water: 0, energy: 0 };
   assert.ok(
-    survival(periods[13], regions[0], low).seconds <
-      survival(periods[13], regions[0], freshStats()).seconds,
+    survival(periods[13], regions[0], low).hours <
+      survival(periods[13], regions[0], freshStats()).hours,
   );
-  assert.equal(survival(mild, regions[0], { ...low, health: 0 }).seconds, 0);
+  assert.equal(survival(mild, regions[0], { ...low, health: 0 }).hours, 0);
 });
 test('every era introduces a unique historical discovery before generic encounters', () => {
   const discoveries = periods.map(historicalDiscovery);
