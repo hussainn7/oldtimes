@@ -55,9 +55,6 @@ export default function World(props: WorldProps) {
         <Suspense fallback={null}>
           <World2D {...props} />
         </Suspense>
-        <output className="render-status">
-          Compatibility view · 3D is unavailable on this device
-        </output>
       </>
     );
   return (
@@ -71,12 +68,6 @@ export default function World(props: WorldProps) {
       <div className="wildlife-label" ref={label} aria-hidden="true" />
       {status === 'loading' && (
         <output className="render-status">Preparing your expedition…</output>
-      )}
-      {props.showLabels && (
-        <div className="camera-hint">
-          WASD to explore <span>·</span> Drag to look <span>·</span> Scroll to
-          zoom <span>·</span> R to recenter
-        </div>
       )}
     </>
   );

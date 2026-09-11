@@ -22,7 +22,6 @@ export default function Panels({
         }}
       >
         <DialogContent className="field-dialog">
-          <span className="eyebrow">Expedition archive</span>
           <DialogTitle className="dialog-title">
             {g.panel === 'notes'
               ? g.period.name
@@ -79,12 +78,13 @@ export default function Panels({
                     ? g.period.species.map((s) => s.name).join(' · ')
                     : 'No animals. Early checkpoints show a world before animal ecosystems.'}
                 </p>
-                <h3>How long would you survive?</h3>
+                <h3>Remaining expedition time</h3>
                 <p className="estimate-large">{estimate.label}</p>
                 <p>
-                  Calculated from atmosphere, temperature, water, food,
-                  predators, shelter, knowledge, and your condition. Time travel
-                  restores your supplies for a new expedition.
+                  Estimated active play time until health runs out, using the
+                  same rules as the game. Assumes you stay here without finding
+                  supplies or making choices. Pausing and reading stop the
+                  clock; travel restores supplies.
                 </p>
                 <div className="risk-factors">
                   {Object.entries(estimate.factors).map(([name, n]) => (
@@ -100,11 +100,9 @@ export default function Panels({
                   ))}
                 </div>
                 <p className="fineprint">
-                  A fictional game estimate, not medical or survival advice.
-                  Climate and oxygen values are simplified design parameters,
-                  not precise reconstructions. Organisms represent regional
-                  ecosystems around each checkpoint; they are not a claim of
-                  universal coexistence.
+                  This is game time, not a historical human life expectancy.
+                  Ancient climate and oxygen levels are uncertain; these are
+                  simplified settings for a representative habitat.
                 </p>
               </>
             ) : g.panel === 'journal' ? (
@@ -114,7 +112,7 @@ export default function Panels({
                   <p>
                     {g.visited.length === 28
                       ? 'Atlas complete. Every horizon recorded.'
-                      : 'Each new world becomes a page.'}
+                      : 'Choose a world to explore.'}
                   </p>
                 </div>
                 <div className="atlas-grid" aria-label="Discovered worlds">
@@ -146,10 +144,7 @@ export default function Panels({
                     </article>
                   ))
                 ) : (
-                  <p>
-                    Walk into the landscape and investigate your first
-                    encounter. Your observations and decisions will appear here.
-                  </p>
+                  <p>Investigate to record your first discovery.</p>
                 )}
               </>
             ) : g.panel === 'help' ? (
@@ -192,13 +187,17 @@ export default function Panels({
               </>
             ) : (
               <>
-                <p>
-                  Created for Hussain. Procedural landscapes, articulated
-                  wildlife, and synthesized ambience keep the expedition
-                  lightweight and independent of external asset servers.
-                </p>
                 <h3>Scientific reference points</h3>
                 <ul>
+                  <li>
+                    <a
+                      href="https://www.nhm.ac.uk/discover/news/2023/april/can-ancient-food-webs-help-predict-biodiversity-collapse.html"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Natural History Museum — the Great Dying
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="https://stratigraphy.org/ICSchart/ChronostratChart2024-12.pdf"
@@ -255,7 +254,7 @@ export default function Panels({
         }}
       >
         <DialogContent className="encounter-dialog">
-          <span className="eyebrow">{g.encounter?.category} · Encounter</span>
+          <span className="eyebrow">{g.encounter?.category}</span>
           <DialogTitle className="dialog-title">
             {g.encounter?.title}
           </DialogTitle>

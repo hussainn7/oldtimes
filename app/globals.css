@@ -374,7 +374,7 @@ footer {
   padding: 4px 10px;
   background: none;
   border: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-faint);
   letter-spacing: 0.04em;
 }
@@ -451,7 +451,7 @@ footer {
 }
 .timeline-strip span {
   font-family: var(--font-meta);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
 }
 .timeline-strip i {
@@ -469,7 +469,7 @@ footer {
   background: var(--accent);
 }
 .timeline-strip small {
-  font-size: 9px;
+  font-size: 12px;
   max-width: 90px;
   white-space: nowrap;
   overflow: hidden;
@@ -520,7 +520,7 @@ footer {
   animation: rise-in 0.65s var(--ease);
 }
 .period-title .eyebrow {
-  font-size: 10px;
+  font-size: 12px;
 }
 .period-title h1 {
   font-size: clamp(32px, 3.8vw, 52px);
@@ -661,14 +661,14 @@ footer {
   min-height: 40px;
 }
 .walk-controls > span {
-  font-size: 9px;
+  font-size: 12px;
   color: var(--ink-faint);
   letter-spacing: 0.08em;
   margin-left: 8px;
   text-transform: uppercase;
 }
 .walk-controls kbd {
-  font-size: 9px;
+  font-size: 12px;
   margin-left: 2px;
 }
 .investigate {
@@ -678,7 +678,7 @@ footer {
   border: 0;
   border-bottom: 1px solid var(--accent);
   background: transparent;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink);
   padding: 8px 4px;
   border-radius: 0;
@@ -695,7 +695,7 @@ footer {
   display: flex;
   gap: 10px;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
   background: transparent;
   border: 0;
   color: var(--ink-muted);
@@ -723,7 +723,7 @@ footer {
   border-top: 0;
 }
 .bottom-hud .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.12em;
 }
 .field-note p {
@@ -740,7 +740,7 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ink-faint);
   padding: 0;
   background: none;
@@ -759,7 +759,7 @@ footer {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ink-muted);
 }
 .vitals b {
@@ -835,7 +835,9 @@ footer {
   color: var(--good);
 }
 .survival small.disclaimer {
-  display: none;
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
 }
 
 /* ——— Dialogs ——— */
@@ -1315,7 +1317,7 @@ footer {
     width: 100%;
   }
   .era-jumps button {
-    font-size: 10px;
+    font-size: 12px;
     padding: 4px 2px;
   }
   .timeline-strip {
@@ -1343,12 +1345,13 @@ footer {
     display: none;
   }
   .period-title .eyebrow {
-    font-size: 8px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
   }
   .map-panel {
     top: 128px;
     right: 8px;
-    width: 78px;
+    width: 116px;
   }
   .map-label {
     display: none;
@@ -1367,8 +1370,9 @@ footer {
     margin-top: 4px;
   }
   .region-picker select {
-    font-size: 8px;
-    width: 78px;
+    font-size: 12px;
+    width: 116px;
+    min-height: 36px;
     padding: 3px 12px 3px 3px;
   }
   .exploration {
@@ -1387,7 +1391,7 @@ footer {
     min-height: 44px;
   }
   .investigate {
-    font-size: 11px;
+    font-size: 14px;
     padding: 8px 2px;
     gap: 6px;
   }
@@ -1420,7 +1424,7 @@ footer {
     gap: 8px 10px;
   }
   .vitals > div > div {
-    font-size: 10px;
+    font-size: 12px;
   }
   .survival {
     padding-left: 12px;

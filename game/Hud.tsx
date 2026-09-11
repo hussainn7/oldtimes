@@ -1,6 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
 import type { Period, Region, Stats } from './types';
-import { survival, factorTone } from './survival';
+import { survival } from './survival';
 
 export default function Hud({
   period,
@@ -14,17 +14,10 @@ export default function Hud({
   onInfo: () => void;
 }) {
   const estimate = survival(period, region, stats);
-  const outlook = [
-    { key: 'water', label: 'Water' },
-    { key: 'food', label: 'Food' },
-    { key: 'predators', label: 'Predators' },
-    { key: 'temperature', label: 'Climate' },
-  ] as const;
 
   return (
     <section className="bottom-hud" aria-label="Expedition status">
       <div className="field-note">
-        <span className="eyebrow">Field conditions</span>
         <p>
           {period.climate}
           <span>·</span>
@@ -53,22 +46,11 @@ export default function Hud({
         ))}
       </div>
       <button className="survival" onClick={onInfo} type="button">
-        <span className="eyebrow">Survival outlook</span>
+        <span className="eyebrow">Time remaining</span>
         <strong>
           {/^\d/.test(estimate.label) ? `~${estimate.label}` : estimate.label}
         </strong>
-        <div className="survival-factors" aria-hidden="true">
-          {outlook.map(({ key, label }) => {
-            const tone = factorTone(estimate.factors[key]);
-            return (
-              <span key={key} className={tone.cls}>
-                {label}
-                <b>{tone.word}</b>
-              </span>
-            );
-          })}
-        </div>
-        <small className="disclaimer">Simulated estimate</small>
+        <small className="disclaimer">Active play · estimate</small>
       </button>
     </section>
   );

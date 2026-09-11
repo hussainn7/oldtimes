@@ -486,7 +486,7 @@ export function createExpedition(
       label.style.display = visible ? 'block' : 'none';
       label.style.left = `${(projected.x * 0.5 + 0.5) * width}px`;
       label.style.top = `${(-projected.y * 0.5 + 0.5) * height}px`;
-      label.textContent = `${nearest.species.name} · ${nearest.mode === 'alert' ? 'Alert — keep your distance' : nearest.mode === 'flee' ? 'Retreating' : 'E to observe'}`;
+      label.textContent = `${nearest.species.name}${nearest.mode === 'alert' ? ' · Keep your distance' : ''}`;
     } else label.style.display = 'none';
     reportTime += dt;
     if (reportTime > 0.25) {

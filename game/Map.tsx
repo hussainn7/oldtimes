@@ -101,8 +101,6 @@ export default function EarthMap({
         />
         <circle cx={r.x} cy={r.y} r="2.5" fill="#f4d195" />
       </svg>
-      <span>{p.continents}</span>
-      <small>Approximate reconstruction · schematic</small>
     </div>
   );
 }

@@ -60,13 +60,14 @@ export default function Game() {
               <button
                 className="journal-button"
                 type="button"
+                aria-label={`Journal: ${g.visited.length} of ${periods.length} worlds`}
                 onClick={() => g.setPanel('journal')}
               >
                 <BookOpen size={14} />
                 <span>Journal</span>
                 <b>
                   {g.visited.length}
-                  <small>/28</small>
+                  <small>/{periods.length}</small>
                 </b>
               </button>
               <button
@@ -94,15 +95,11 @@ export default function Game() {
       {!g.started ? (
         <>
           <section className="start">
-            <span className="eyebrow">
-              <span className="tiny-line" />A natural-history expedition
-            </span>
             <h1>
               Earth
               <br />
               <em>through time.</em>
             </h1>
-            <p>Walk 4.5 billion years of one living planet.</p>
             <button className="primary" type="button" onClick={g.begin}>
               Begin journey <ArrowRight size={16} />
             </button>
@@ -117,12 +114,7 @@ export default function Game() {
               Start from the beginning →
             </button>
           </section>
-          <div className="landing-caption">
-            <span className="eyebrow">Late Jurassic</span>
-            <p>150 million years before you.</p>
-          </div>
           <footer>
-            <span>Walk into the past. Find your place in it.</span>
             <button
               className="text-button"
               type="button"
@@ -142,15 +134,9 @@ export default function Game() {
               {g.period.era} · {g.period.date}
             </span>
             <h1>{g.period.name}</h1>
-            <p>
-              {g.period.biome === 'jurassic'
-                ? 'Before us, a world of giants.'
-                : `${g.period.climate} · ${g.period.vegetation}`}
-            </p>
           </section>
 
           <aside className="map-panel">
-            <div className="map-label">Earth</div>
             <EarthMap period={g.period} region={g.region} />
             <div className="region-picker">
               <NativeSelect
@@ -166,13 +152,6 @@ export default function Game() {
               </NativeSelect>
             </div>
           </aside>
-
-          <div className="exploration" aria-live="polite">
-            <b>{Math.round(g.distance)} m</b>
-            <div className="route-progress">
-              <i style={{ width: `${Math.min(100, g.distance / 55)}%` }} />
-            </div>
-          </div>
 
           <div className="world-actions">
             <div className="walk-controls">
@@ -230,23 +209,35 @@ export default function Game() {
               </button>
               <span>
                 <kbd>WASD</kbd>
+                <span> move · drag to look</span>
               </span>
             </div>
             <button
               className="investigate"
               type="button"
-              disabled={!g.active}
+              disabled={!g.active || !g.canInvestigate}
               onClick={g.trigger}
             >
-              <span>{g.nearby ? 'Observe wildlife' : 'Investigate'}</span>
+              <span>
+                {!g.canInvestigate
+                  ? g.hasUnseenWildlife
+                    ? 'Explore farther'
+                    : 'World explored'
+                  : g.nearby
+                    ? 'Observe'
+                    : 'Investigate'}
+              </span>
               <kbd>E</kbd>
             </button>
             <button
               className="next-era"
               type="button"
-              onClick={() => g.travel((g.index + 1) % periods.length)}
+              disabled={g.nextUnvisited === undefined}
+              onClick={() => {
+                if (g.nextUnvisited !== undefined) g.travel(g.nextUnvisited);
+              }}
             >
-              {g.index === 27 ? 'Back to start' : 'Next world'}
+              {g.nextUnvisited === undefined ? 'Atlas complete' : 'Next world'}
               <ArrowRight size={14} />
             </button>
           </div>
@@ -260,20 +251,11 @@ export default function Game() {
 
           {(g.paused || g.stats.health <= 0) && !g.panel && !g.encounter && (
             <div className="pause-screen">
-              <span className="eyebrow">
-                {g.stats.health <= 0
-                  ? 'The expedition ends. Curiosity does not.'
-                  : 'Take your time'}
-              </span>
-              <h2>
-                {g.stats.health <= 0
-                  ? 'A difficult world.'
-                  : 'Expedition paused.'}
-              </h2>
+              <h2>{g.stats.health <= 0 ? 'Expedition ended' : 'Paused'}</h2>
               <p>
                 {g.stats.health <= 0
-                  ? 'Your discoveries stay in the journal. Retry with fresh supplies, or travel onward.'
-                  : 'Supplies hold while you pause.'}
+                  ? 'Discoveries saved. Try again or explore another world.'
+                  : 'Your supplies are safe.'}
               </p>
               <button
                 className="primary"
@@ -285,11 +267,14 @@ export default function Game() {
                 {g.stats.health <= 0 ? 'Try again' : 'Resume'}
                 <ArrowRight size={15} />
               </button>
-              {g.stats.health <= 0 && (
+              {g.stats.health <= 0 && g.nextUnvisited !== undefined && (
                 <button
                   className="text-button"
                   type="button"
-                  onClick={() => g.travel((g.index + 1) % periods.length)}
+                  onClick={() => {
+                    if (g.nextUnvisited !== undefined)
+                      g.travel(g.nextUnvisited);
+                  }}
                 >
                   Travel to the next world →
                 </button>
@@ -299,7 +284,6 @@ export default function Game() {
 
           {g.traveling && (
             <div className="travel-flash" aria-hidden="true">
-              <span>Traveling through deep time</span>
               <strong>{g.period.name}</strong>
               <small>{g.period.date}</small>
             </div>

@@ -6,8 +6,8 @@ import { periods, shortDate } from './data';
 const ERA_JUMPS: [string, number][] = [
   ['Origins', 0],
   ['Paleozoic', 6],
-  ['Mesozoic', 12],
-  ['Cenozoic', 17],
+  ['Mesozoic', 11],
+  ['Cenozoic', 16],
   ['Today', 27],
 ];
 
@@ -54,9 +54,9 @@ export default function Timeline({
               type="button"
               aria-current={
                 (name === 'Origins' && index < 6) ||
-                (name === 'Paleozoic' && index >= 6 && index < 12) ||
-                (name === 'Mesozoic' && index >= 12 && index < 17) ||
-                (name === 'Cenozoic' && index >= 17 && index < 27) ||
+                (name === 'Paleozoic' && index >= 6 && index < 11) ||
+                (name === 'Mesozoic' && index >= 11 && index < 16) ||
+                (name === 'Cenozoic' && index >= 16 && index < 27) ||
                 (name === 'Today' && index === 27)
                   ? 'true'
                   : undefined
