@@ -9,7 +9,7 @@ A playable, illustrated expedition through 4.5 billion years of Earth history. B
 - **[ / ]**: previous / next world.
 - Drag, scroll, click, or use the slider to travel through 28 checkpoints.
 - Change your region beside the globe. Open field notes to understand the survival estimate.
-- **Escape**: pause. Notes and encounters pause the survival clock automatically.
+- **Escape**: pause the expedition.
 - Discover all 28 worlds to fill your atlas. Your journal stays on this device.
 
 Travel starts a fresh expedition with restored supplies. Death preserves discoveries. Audio is optional and starts only when enabled.
@@ -57,7 +57,7 @@ React + TypeScript, Vite/Vinext, Three.js/WebGL2 with a Canvas compatibility vie
 | `game/Panels.tsx` | Field notes, journal, atlas, help, credits, decisions |
 | `game/useWebMCP.ts` | Optional structured read and travel actions |
 
-The 3D renderer uses one animation loop, instanced scenery, capped/adaptive pixel ratio and a single shadow map. It releases scene resources when changing habitats. The original renderer remains available for devices without WebGL2. Reduced-motion preferences suppress ambient movement. Inactive tabs pause stat depletion and audio. The data and survival logic have no React dependency.
+The 3D renderer uses one animation loop, instanced scenery, capped/adaptive pixel ratio and a single shadow map. It releases scene resources when changing habitats. The original renderer remains available for devices without WebGL2. Reduced-motion preferences suppress ambient movement. The data and survival logic have no React dependency.
 
 See `ASTRA_3D_HANDOFF.md` for exact drop-in Blender filenames, scale/orientation, animation names, budgets and prioritized art requests. `npm run assets` refreshes the asset index after adding files.
 
@@ -65,7 +65,7 @@ See `ASTRA_3D_HANDOFF.md` for exact drop-in Blender filenames, scale/orientation
 
 This is a stylized game, not a scientific simulation. Checkpoints represent selected ecosystems within broad eras, not exact geological boundaries. Organisms are regional representatives and are not claimed to coexist across every selectable region. Species shapes, temperatures and oxygen concentrations are simplified game parameters. The map communicates broad continental assembly and breakup; its shapes and location marker are schematic, especially in deep time.
 
-The time-remaining readout forecasts active play time by replaying the same 1.5-second updates as the game until health reaches zero. It assumes no new choices, supplies, or travel; pausing, reading, and hidden tabs stop depletion. Air, regional temperature, resources, danger, condition, shelter, and knowledge affect the shared model. This is not a historical human life expectancy or a measured real-world survival prediction.
+The survival readout is a static projection in hours or days. It assumes an unprotected human stays in the selected region without finding new supplies or traveling. Air, temperature, resources, danger, health, shelter, and knowledge affect the estimate. It changes only when those conditions change. This is a simplified game estimate, not a historical human lifespan or a measured real-world prediction.
 
 Each checkpoint introduces a distinct historical discovery. Encounter IDs are saved on this device and are not offered again, even after travel or a reload; wildlife observations are unique per species. Exhausted encounter pools do not restart. The Next world button visits an undiscovered checkpoint and stops once the atlas is complete; the timeline still allows intentional revisits.
 
