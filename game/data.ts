@@ -1,8 +1,5 @@
 import type { Period, Region, Biome, Species, AnimalKind } from './types';
-import {
-  buildEnvironmentRegistry,
-  buildSpeciesRegistry,
-} from './assets';
+import { buildEnvironmentRegistry, buildSpeciesRegistry } from './assets';
 export { explorerAsset, ASSET_ROOTS } from './assets';
 export const regions: Region[] = [
   {
@@ -619,9 +616,13 @@ export const periods: Period[] = rows.map(
         ? 'Shallow marine shelves and rocky shores'
         : biome === 'ice'
           ? 'Glacial valleys, tundra and exposed plains'
-          : biome === 'desert'
-            ? 'Dry basins and seasonal rivers'
-            : 'River floodplains and wooded uplands',
+          : biome === 'volcanic'
+            ? 'Lava fields and unstable cooling crust'
+            : biome === 'ash'
+              ? 'Disrupted terrain and damaged ecosystems'
+              : biome === 'desert'
+                ? 'Dry basins and seasonal rivers'
+                : 'River floodplains and wooded uplands',
     species: animals ? fauna[animals] : [],
     ...(mya > 1000 ? { oxygen: 0.5 } : {}),
     ...(id === 'great-dying'
