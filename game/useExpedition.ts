@@ -1,13 +1,31 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { periods, regions } from './data';
-import { applyChanges, freshStats, tick } from './survival';
-import { eligibleEvents, type Encounter, type Choice } from './events';
+import { applyChanges, freshStats, tick, TICK_MS } from './survival';
+import {
+  availableEvents,
+  nextEncounter,
+  type Encounter,
+  type Choice,
+} from './events';
 import type { WorldHandle } from './types';
 export interface Entry {
   title: string;
   detail: string;
   period: string;
+}
+export function uniqueEntries(entries: Entry[]) {
+  return entries
+    .filter(
+      (entry, index, all) =>
+        all.findIndex(
+          (other) =>
+            other.title === entry.title &&
+            other.detail === entry.detail &&
+            other.period === entry.period,
+        ) === index,
+    )
+    .slice(0, 80);
 }
 export function useExpedition() {
   const [index, setIndex] = useState(13),
@@ -18,6 +36,7 @@ export function useExpedition() {
     [distance, setDistance] = useState(0),
     [visited, setVisited] = useState<string[]>([]),
     [entries, setEntries] = useState<Entry[]>([]),
+    [seenEvents, setSeenEvents] = useState<string[]>([]),
     [encounter, setEncounter] = useState<Encounter | null>(null),
     [outcome, setOutcome] = useState<Choice | null>(null),
     [panel, setPanel] = useState<
@@ -33,7 +52,6 @@ export function useExpedition() {
     }),
     direction = useRef(0),
     depth = useRef(0),
-    eventCount = useRef(0),
     lastEvent = useRef(0),
     travelTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
     loaded = useRef(false);
@@ -55,17 +73,25 @@ export function useExpedition() {
                 )
               : [],
           );
-          setEntries(
-            Array.isArray(raw.entries)
-              ? raw.entries
-                  .filter(
-                    (e: Entry) =>
-                      typeof e.title === 'string' &&
-                      typeof e.detail === 'string' &&
-                      typeof e.period === 'string',
-                  )
-                  .slice(0, 80)
+          setSeenEvents(
+            Array.isArray(raw.seenEvents)
+              ? raw.seenEvents.filter((id: unknown) => typeof id === 'string')
               : [],
+          );
+          setEntries(
+            uniqueEntries(
+              Array.isArray(raw.entries)
+                ? raw.entries
+                    .filter(
+                      (e: Entry) =>
+                        e &&
+                        typeof e.title === 'string' &&
+                        typeof e.detail === 'string' &&
+                        typeof e.period === 'string',
+                    )
+                    .slice(0, 80)
+                : [],
+            ),
           );
         }
       } catch {
@@ -83,16 +109,16 @@ export function useExpedition() {
       try {
         localStorage.setItem(
           'earth-expedition-v1',
-          JSON.stringify({ visited, entries }),
+          JSON.stringify({ visited, entries, seenEvents }),
         );
       } catch {
         /* Exploration remains available without persistence. */
       }
-  }, [visited, entries]);
+  }, [visited, entries, seenEvents]);
   const record = useCallback(
     (title: string, detail: string) =>
       setEntries((old) =>
-        [{ title, detail, period: periods[index].name }, ...old].slice(0, 80),
+        uniqueEntries([{ title, detail, period: periods[index].name }, ...old]),
       ),
     [index],
   );
@@ -109,7 +135,6 @@ export function useExpedition() {
     setDistance(0);
     setNearby('');
     lastEvent.current = 0;
-    eventCount.current = 0;
     setVisited((old) =>
       old.includes(periods[i].id) ? old : [...old, periods[i].id],
     );
@@ -131,41 +156,21 @@ export function useExpedition() {
     if (!active) return;
     const timer = setInterval(() => {
       if (!document.hidden) setStats((s) => tick(s, period, region));
-    }, 1500);
+    }, TICK_MS);
     return () => clearInterval(timer);
   }, [active, period, region]);
   const trigger = useCallback(() => {
     if (encounter || stats.health <= 0) return;
-    const list = eligibleEvents(period);
-    if (!list.length) return;
-    let e = list[eventCount.current % list.length];
-    if (world.current.nearby) {
-      const species = period.species.find(
-        (s) => s.name === world.current.nearby,
-      );
-      const wildlife = list.find(
-        (e) => e.id === (species?.behavior === 'hunt' ? 'predator' : 'herd'),
-      );
-      if (wildlife)
-        e = {
-          ...wildlife,
-          title:
-            species?.behavior === 'hunt'
-              ? `${world.current.nearby} is watching`
-              : `An encounter with ${world.current.nearby}`,
-          body:
-            species?.behavior === 'hunt'
-              ? `A ${world.current.nearby} has noticed movement along your route. Give it space.`
-              : `You spot a ${world.current.nearby} moving through this ancient habitat. A quiet approach keeps the encounter at a safe distance.`,
-        };
-    }
-    eventCount.current++;
+    const e = nextEncounter(period, region, seenEvents, world.current.nearby);
+    lastEvent.current = world.current.distance;
+    if (!e) return;
+    setSeenEvents((old) => (old.includes(e.id) ? old : [...old, e.id]));
     setEncounter(e);
     setOutcome(null);
     direction.current = 0;
     depth.current = 0;
     lastEvent.current = world.current.distance;
-  }, [encounter, stats.health, period]);
+  }, [encounter, stats.health, period, region, seenEvents]);
   const explore = useCallback(
     (d: number) => {
       setDistance(d);
@@ -181,11 +186,19 @@ export function useExpedition() {
     record(encounter?.title || 'Encounter', choice.outcome);
   };
   const changeRegion = (i: number) => {
-    if (i < 0 || i >= regions.length) return;
+    if (
+      !Number.isInteger(i) ||
+      i < 0 ||
+      i >= regions.length ||
+      i === regionIndex
+    )
+      return;
     setRegion(i);
     setEncounter(null);
     setOutcome(null);
     world.current.nearby = '';
+    setNearby('');
+    lastEvent.current = world.current.distance;
     record('A new route', `Moved to ${regions[i].name}.`);
   };
   useEffect(() => {
@@ -211,6 +224,16 @@ export function useExpedition() {
     direction.current = dir;
   };
   return {
+    hasUnseenWildlife: period.species.some(
+      (s) => !seenEvents.includes(`wildlife:${s.name}`),
+    ),
+    canInvestigate:
+      availableEvents(period, region, seenEvents).length > 0 ||
+      (period.species.some((s) => s.name === nearby) &&
+        !seenEvents.includes(`wildlife:${nearby}`)),
+    nextUnvisited: periods
+      .map((_, offset) => (index + offset + 1) % periods.length)
+      .find((i) => !visited.includes(periods[i].id)),
     startWalking,
     startDepth: (dir: number) => {
       if (active) depth.current = dir;

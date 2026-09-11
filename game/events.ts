@@ -1,4 +1,4 @@
-import type { Biome, Stats, Period } from './types';
+import type { Biome, Stats, Period, Region } from './types';
 export interface Choice {
   label: string;
   outcome: string;
@@ -480,10 +480,114 @@ export const events: Encounter[] = [
     ],
   },
 ];
-export function eligibleEvents(p: Period) {
-  return events.filter(
+export function eligibleEvents(p: Period, r?: Region) {
+  const temperature = p.temperature + (r?.temperature ?? 0);
+  const generic = events.filter(
     (e) =>
       e.biomes.includes(p.biome) &&
-      (!e.requires || e.requires !== 'animals' || p.species.length > 0),
+      (!e.requires || e.requires !== 'animals' || p.species.length > 0) &&
+      (e.id !== 'predator' || p.species.some((s) => s.behavior === 'hunt')) &&
+      (e.id !== 'herd' ||
+        p.species.some((s) => s.behavior === 'graze' && s.size >= 0.7)) &&
+      (e.id !== 'birds' || p.species.some((s) => s.behavior === 'fly')) &&
+      (e.id !== 'cold' || temperature < 12) &&
+      (e.id !== 'heat' || temperature >= 28) &&
+      (e.id !== 'air' || p.oxygen < 19.5) &&
+      (e.id !== 'fossil' || p.mya < 3500),
   );
+  // These extinction events had different causes; sharing an ash biome must
+  // not turn the end-Permian greenhouse into an asteroid impact winter.
+  return generic.map((e) =>
+    e.id === 'ashfall' && p.id === 'great-dying'
+      ? {
+          ...e,
+          id: 'volcanic-aftermath',
+          title: 'After the eruptions',
+          body: 'Volcanic warming has disrupted this ecosystem. Sparse vegetation offers little cover.',
+          choices: [
+            choice(
+              'Shelter and conserve water',
+              'You shelter from the heat and ration your water.',
+              { shelter: 10, energy: 5, water: -6 },
+            ),
+            choice(
+              'Survey the surviving vegetation',
+              'You document surviving plants in a landscape recovering from volcanic disruption.',
+              { knowledge: 15, health: -8, energy: -12 },
+            ),
+          ],
+        }
+      : e,
+  );
+}
+
+/** A distinct discovery introduces the actual history of every checkpoint. */
+export function historicalDiscovery(p: Period): Encounter {
+  return {
+    id: `history:${p.id}`,
+    category: p.date,
+    title: p.name,
+    body: p.description,
+    biomes: [p.biome],
+    choices: [
+      choice('Record this world', p.description, { knowledge: 12, energy: -3 }),
+      choice(
+        'Survey the landscape',
+        `${p.date}: ${p.geology}. Continental setting: ${p.continents}.`,
+        { knowledge: 8, safety: 6, energy: -5 },
+      ),
+    ],
+  };
+}
+
+export function availableEvents(p: Period, r: Region, seen: readonly string[]) {
+  return [historicalDiscovery(p), ...eligibleEvents(p, r)].filter(
+    (e) => !seen.includes(e.id),
+  );
+}
+
+/** Discoveries do not repeat, including after revisiting an era or reloading. */
+export function nextEncounter(
+  p: Period,
+  r: Region,
+  seen: readonly string[],
+  nearby = '',
+  random = Math.random,
+): Encounter | null {
+  const available = availableEvents(p, r, seen);
+  const history = available.find((e) => e.id.startsWith('history:'));
+  if (history) return history;
+  const species = p.species.find((s) => s.name === nearby);
+  const wildlifeId = species ? `wildlife:${species.name}` : '';
+  if (species && !seen.includes(wildlifeId)) {
+    const hunter = species.behavior === 'hunt';
+    return {
+      id: wildlifeId,
+      category: 'Wildlife',
+      title: species.name,
+      body: hunter
+        ? `A ${species.name} is hunting nearby. Keep your distance.`
+        : `You spot a ${species.name}. Pause to watch how it moves through this habitat.`,
+      biomes: [p.biome],
+      choices: [
+        choice(
+          'Observe from a distance',
+          `You record ${species.name} in ${p.name}, ${p.date.toLowerCase()}.`,
+          { knowledge: 12, energy: -3, safety: 5 },
+        ),
+        choice(
+          'Give it space',
+          `You leave ${species.name} undisturbed and find a quieter route.`,
+          { safety: 10, energy: -4 },
+        ),
+      ],
+    };
+  }
+  if (!available.length) return null;
+  return available[
+    Math.min(
+      available.length - 1,
+      Math.floor(Math.max(0, random()) * available.length),
+    )
+  ];
 }
