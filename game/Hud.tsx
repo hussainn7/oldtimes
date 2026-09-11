@@ -45,12 +45,14 @@ export default function Hud({
           </div>
         ))}
       </div>
-      <button className="survival" onClick={onInfo} type="button">
-        <span className="eyebrow">Time remaining</span>
-        <strong>
-          {/^\d/.test(estimate.label) ? `~${estimate.label}` : estimate.label}
-        </strong>
-        <small className="disclaimer">Active play · estimate</small>
+      <button
+        className="survival"
+        onClick={onInfo}
+        type="button"
+        aria-label={`Approximate survival time: ${estimate.label}`}
+      >
+        <span className="eyebrow">Approx. survival time</span>
+        <strong>{estimate.label}</strong>
       </button>
     </section>
   );

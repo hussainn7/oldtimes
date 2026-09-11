@@ -78,13 +78,12 @@ export default function Panels({
                     ? g.period.species.map((s) => s.name).join(' · ')
                     : 'No animals. Early checkpoints show a world before animal ecosystems.'}
                 </p>
-                <h3>Remaining expedition time</h3>
+                <h3>Approximate survival time</h3>
                 <p className="estimate-large">{estimate.label}</p>
                 <p>
-                  Estimated active play time until health runs out, using the
-                  same rules as the game. Assumes you stay here without finding
-                  supplies or making choices. Pausing and reading stop the
-                  clock; travel restores supplies.
+                  How long an unprotected human might last here with your
+                  current health and supplies. Conditions, shelter, and choices
+                  can change the estimate.
                 </p>
                 <div className="risk-factors">
                   {Object.entries(estimate.factors).map(([name, n]) => (
@@ -100,9 +99,8 @@ export default function Panels({
                   ))}
                 </div>
                 <p className="fineprint">
-                  This is game time, not a historical human life expectancy.
-                  Ancient climate and oxygen levels are uncertain; these are
-                  simplified settings for a representative habitat.
+                  A simplified game estimate, not a measured historical
+                  lifespan. Ancient conditions remain uncertain.
                 </p>
               </>
             ) : g.panel === 'journal' ? (
@@ -174,8 +172,7 @@ export default function Panels({
                 <div className="help-row">
                   <kbd>Esc</kbd>
                   <p>
-                    Pause your expedition. Reading notes and making decisions
-                    also pauses survival.
+                    Pause your expedition while you step away.
                   </p>
                 </div>
                 <p>
