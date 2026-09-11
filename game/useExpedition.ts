@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { periods, regions } from './data';
-import { applyChanges, freshStats, tick, TICK_MS } from './survival';
+import { applyChanges, freshStats } from './survival';
 import {
   availableEvents,
   nextEncounter,
@@ -152,13 +152,6 @@ export function useExpedition() {
     !panel &&
     stats.health > 0 &&
     !traveling;
-  useEffect(() => {
-    if (!active) return;
-    const timer = setInterval(() => {
-      if (!document.hidden) setStats((s) => tick(s, period, region));
-    }, TICK_MS);
-    return () => clearInterval(timer);
-  }, [active, period, region]);
   const trigger = useCallback(() => {
     if (encounter || stats.health <= 0) return;
     const e = nextEncounter(period, region, seenEvents, world.current.nearby);
