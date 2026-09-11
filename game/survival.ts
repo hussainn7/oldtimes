@@ -16,8 +16,7 @@ export function applyChanges(stats: Stats, changes: Partial<Stats>): Stats {
     ]),
   ) as unknown as Stats;
 }
-/** One update is 1.5 seconds of active play; paused time never counts. */
-export const TICK_MS = 1500;
+export const SURVIVAL_STEP_HOURS = 1;
 
 function conditions(p: Period, r: Region, s: Stats) {
   const temp = p.temperature + r.temperature;
@@ -34,7 +33,7 @@ function conditions(p: Period, r: Region, s: Stats) {
   return { risk, factors, temperature: temp };
 }
 
-/** Forecast by replaying the same updates used by the live game, without choices. */
+/** Project survival in one-hour steps with no new supplies or travel. */
 export function survival(p: Period, r: Region, s: Stats) {
   let projected = { ...s };
   let ticks = 0;
@@ -42,21 +41,20 @@ export function survival(p: Period, r: Region, s: Stats) {
     projected = tick(projected, p, r);
     ticks++;
   }
-  const seconds = (ticks * TICK_MS) / 1000;
+  const hours = ticks * SURVIVAL_STEP_HOURS;
   return {
-    seconds,
-    days: seconds / 86400,
-    label: s.health <= 0 ? 'Expedition ended' : formatRemaining(seconds),
+    hours,
+    days: hours / 24,
+    label: s.health <= 0 ? 'No survival time' : formatSurvival(hours),
     ...conditions(p, r, s),
   };
 }
 
-export function formatRemaining(seconds: number) {
-  const rounded = Math.ceil(seconds);
-  if (rounded < 60) return `${rounded}s`;
-  const minutes = Math.floor(rounded / 60);
-  const remainder = rounded % 60;
-  return `${minutes}m${remainder ? ` ${remainder}s` : ''}`;
+export function formatSurvival(hours: number) {
+  const rounded = Math.max(1, Math.round(hours));
+  if (rounded < 48) return `${rounded} ${rounded === 1 ? 'hour' : 'hours'}`;
+  const days = Math.round(rounded / 24);
+  return `${days} days`;
 }
 
 /** Map a risk factor score into a short field word for the HUD. */
