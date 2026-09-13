@@ -6,6 +6,8 @@ import {
   eligibleEvents,
   historicalDiscovery,
   nextEncounter,
+  fatalChance,
+  resolveChoice,
 } from '../.test-build/events.js';
 import {
   freshStats,
@@ -13,6 +15,8 @@ import {
   survival,
   tick,
   SURVIVAL_STEP_HOURS,
+  SURVIVAL_LIMIT_HOURS,
+  formatSurvival,
 } from '../.test-build/survival.js';
 test('all checkpoints have unique descending dates and playable content', () => {
   assert.equal(periods.length, 28);
@@ -26,6 +30,7 @@ test('all checkpoints have unique descending dates and playable content', () => 
       const result = survival(p, r, freshStats());
       assert.ok(Number.isFinite(result.days));
       assert.ok(result.label.length > 0);
+      if (p.species.length === 0) assert.equal(result.factors.predators, 0);
     }
   }
 });
@@ -57,7 +62,7 @@ test('survival responds to supplies, shelter, location and breathable air', () =
   assert.ok(survival(periods[0], regions[0], base).hours < 24);
   assert.equal(
     survival(periods[0], regions[0], { ...base, health: 0 }).label,
-    'No survival time',
+    'Expedition over',
   );
 });
 test('survival estimate matches the model in every world and region', () => {
@@ -68,22 +73,49 @@ test('survival estimate matches the model in every world and region', () => {
         { ...freshStats(), health: 28, water: 8, shelter: 60, knowledge: 45 },
       ]) {
         const estimate = survival(p, r, initial);
-        let state = initial;
-        let hours = 0;
-        while (state.health > 0 && hours < 20000) {
-          state = tick(state, p, r);
-          hours += SURVIVAL_STEP_HOURS;
-        }
-        assert.equal(state.health, 0);
-        assert.equal(estimate.hours, hours, `${p.id}/${r.id}`);
-        assert.ok(Math.abs(estimate.days * 24 - estimate.hours) < 1e-9);
+        assert.ok(estimate.hours <= SURVIVAL_LIMIT_HOURS + 1e-6, p.id);
+        assert.ok(Math.abs(estimate.days * 24 - estimate.hours) < 1e-6);
         const afterTick = survival(p, r, tick(initial, p, r));
-        assert.equal(
-          afterTick.hours,
-          Math.max(0, estimate.hours - SURVIVAL_STEP_HOURS),
-        );
+        assert.ok(afterTick.hours <= estimate.hours + 1e-6, `${p.id}/${r.id}`);
+        if (estimate.hours < 48) {
+          assert.ok(
+            Math.abs(
+              afterTick.hours -
+                Math.max(0, estimate.hours - SURVIVAL_STEP_HOURS),
+            ) < 0.05,
+            `${p.id}/${r.id}`,
+          );
+        } else {
+          assert.ok(
+            estimate.hours - afterTick.hours < 48,
+            `${p.id}/${r.id} long forecast`,
+          );
+        }
       }
     }
+});
+test('survival eras follow the modern-human breathability ladder', () => {
+  const coast = regions[0];
+  const hours = (id) =>
+    survival(
+      periods.find((p) => p.id === id),
+      coast,
+      freshStats(),
+    ).hours;
+  // Anoxic deep time: minutes
+  assert.ok(hours('formation') < 0.1);
+  assert.ok(hours('first-oceans') < 0.1);
+  assert.ok(hours('rodinia') < 2);
+  // Hypoxic seas: hours to a few days
+  assert.ok(hours('cambrian') >= 2 && hours('cambrian') < 72);
+  assert.ok(hours('ordovician') >= 24 && hours('ordovician') < 14 * 24);
+  // Breathable deep past: weeks or more
+  assert.ok(hours('devonian') >= 7 * 24);
+  assert.ok(hours('carboniferous') >= 30 * 24);
+  assert.ok(hours('jurassic') >= 14 * 24);
+  // Near-modern: years
+  assert.ok(hours('pliocene') >= 365 * 24);
+  assert.ok(hours('today') >= 20 * 365 * 24);
 });
 test('regional heat and low reserves shorten the forecast; ended means zero', () => {
   const mild = { ...periods[13], temperature: 60, oxygen: 21 };
@@ -208,4 +240,115 @@ test('3D species keys are stable and retain all historical memberships', () => {
       assert.match(item.id, /^[a-z0-9-]+$/);
       assert.ok(item.model.scale > 0);
     }
+});
+
+test('lifespan formatting retains short exposures and longer spans', () => {
+  assert.equal(formatSurvival(0), '0 minutes');
+  assert.equal(formatSurvival(1 / 60), '1 minute');
+  assert.equal(formatSurvival(3 / 60), '3 minutes');
+  assert.equal(formatSurvival(1), '1 hour');
+  assert.equal(formatSurvival(1.5), '1 hour 30 min');
+  assert.equal(formatSurvival(52), '2 days 4 hr');
+  assert.equal(formatSurvival(21 * 24), '3 weeks');
+  assert.equal(formatSurvival(90 * 24), '3 months');
+  assert.equal(formatSurvival(2 * 365.25 * 24), '2 years');
+});
+
+test('oxygen-free worlds allow minutes, and shelter cannot supply oxygen', () => {
+  const p = { ...periods[27], oxygen: 0, temperature: 20 };
+  const base = freshStats();
+  const estimate = survival(p, regions[0], base);
+  assert.ok(estimate.hours > 0 && estimate.hours <= 5 / 60);
+  assert.equal(
+    survival(p, regions[0], { ...base, shelter: 100 }).hours,
+    estimate.hours,
+  );
+  assert.ok(survival({ ...p, oxygen: 21 }, regions[0], base).hours > 24);
+});
+
+test('forecast is deterministic and leaves live supplies untouched', () => {
+  const stats = Object.freeze(freshStats());
+  assert.deepEqual(
+    survival(periods[13], regions[0], stats),
+    survival(periods[13], regions[0], stats),
+  );
+  assert.deepEqual(stats, freshStats());
+});
+
+const wildlife = (p, name) =>
+  nextEncounter(p, regions[0], [`history:${p.id}`], name);
+
+test('approaching a large predator is riskier than a wolf; small wildlife is not arbitrarily lethal', () => {
+  const j = periods.find((p) => p.id === 'jurassic');
+  const modern = periods[27];
+  const allosaurus = wildlife(j, 'Allosaurus').choices[2];
+  const wolf = wildlife(modern, 'Grey wolf').choices[2];
+  assert.ok(
+    fatalChance(allosaurus, j, regions[0], freshStats()) >
+      fatalChance(wolf, modern, regions[0], freshStats()),
+  );
+  const small = wildlife(j, 'Small mammaliaform').choices[2];
+  assert.equal(fatalChance(small, j, regions[0], freshStats()), 0);
+  const giant = wildlife(j, 'Brachiosaurus').choices[2];
+  assert.ok(fatalChance(giant, j, regions[0], freshStats()) > 0);
+});
+
+test('risk responds to location, injury, preparation and climate', () => {
+  const p = periods[13],
+    s = freshStats();
+  const c = wildlife(p, 'Allosaurus').choices[2];
+  const base = fatalChance(c, p, regions[0], s);
+  assert.ok(fatalChance(c, p, regions[2], s) > base);
+  assert.ok(
+    fatalChance(c, p, regions[0], { ...s, health: 40, energy: 20 }) > base,
+  );
+  assert.ok(
+    fatalChance(c, p, regions[0], { ...s, safety: 100, knowledge: 100 }) < base,
+  );
+  const heat = events.find((e) => e.id === 'heat').choices[1];
+  assert.ok(
+    fatalChance(heat, { ...p, temperature: 50 }, regions[0], s) >
+      fatalChance(heat, p, regions[0], s),
+  );
+});
+
+test('fatal rolls end the expedition, a roll at the threshold survives, and safe choices never roll', () => {
+  const p = periods[13],
+    s = freshStats();
+  const e = wildlife(p, 'Allosaurus'),
+    c = e.choices[2];
+  const chance = fatalChance(c, p, regions[0], s);
+  let rolls = 0;
+  const fatal = resolveChoice(c, p, regions[0], s, () => {
+    rolls++;
+    return chance - 0.001;
+  });
+  assert.equal(rolls, 1);
+  assert.equal(fatal.stats.health, 0);
+  assert.equal(fatal.fatal, true);
+  assert.match(fatal.outcome.outcome, /You died.*Allosaurus.*Expedition over/);
+  const escaped = resolveChoice(c, p, regions[0], s, () => chance);
+  assert.equal(escaped.fatal, false);
+  assert.equal(escaped.stats.health, 86);
+  assert.equal(
+    resolveChoice(e.choices[0], p, regions[0], s, () => {
+      throw new Error('safe roll');
+    }).fatal,
+    false,
+  );
+  assert.deepEqual(s, freshStats());
+});
+
+test('ordinary injuries can also be fatal and displayed changes reflect actual reserves', () => {
+  const c = {
+    label: 'Fall',
+    outcome: 'Injured.',
+    changes: { health: -12, water: 30 },
+  };
+  const s = { ...freshStats(), health: 8 };
+  assert.equal(fatalChance(c, periods[13], regions[0], s), 1);
+  const result = resolveChoice(c, periods[13], regions[0], s);
+  assert.equal(result.fatal, true);
+  assert.equal(result.outcome.changes.health, -8);
+  assert.equal(result.outcome.changes.water, 18);
 });

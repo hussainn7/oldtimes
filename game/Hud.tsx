@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+import { useMemo } from 'react';
 import type { Period, Region, Stats } from './types';
 import { survival } from './survival';
 
@@ -13,7 +14,10 @@ export default function Hud({
   stats: Stats;
   onInfo: () => void;
 }) {
-  const estimate = survival(period, region, stats);
+  const estimate = useMemo(
+    () => survival(period, region, stats),
+    [period, region, stats],
+  );
 
   return (
     <section className="bottom-hud" aria-label="Expedition status">
@@ -49,10 +53,18 @@ export default function Hud({
         className="survival"
         onClick={onInfo}
         type="button"
-        aria-label={`Approximate survival time: ${estimate.label}`}
+        aria-label={`Estimated survival here: ${estimate.label}. Changes with conditions and choices.`}
       >
-        <span className="eyebrow">Approx. survival time</span>
-        <strong>{estimate.label}</strong>
+        <span className="eyebrow">You could survive here</span>
+        <strong>
+          {stats.health > 0 ? '~ ' : ''}
+          {estimate.label}
+        </strong>
+        <small className="disclaimer">
+          {stats.health > 0
+            ? 'Estimate · changes with your choices'
+            : 'Try again to start fresh'}
+        </small>
       </button>
     </section>
   );

@@ -5,14 +5,19 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { periods, shortDate } from './data';
+import { useMemo } from 'react';
 import { survival } from './survival';
+import { fatalChance } from './events';
 import type { useExpedition } from './useExpedition';
 export default function Panels({
   game: g,
 }: {
   game: ReturnType<typeof useExpedition>;
 }) {
-  const estimate = survival(g.period, g.region, g.stats);
+  const estimate = useMemo(
+    () => survival(g.period, g.region, g.stats),
+    [g.period, g.region, g.stats],
+  );
   return (
     <>
       <Dialog
@@ -78,12 +83,24 @@ export default function Panels({
                     ? g.period.species.map((s) => s.name).join(' · ')
                     : 'No animals. Early checkpoints show a world before animal ecosystems.'}
                 </p>
-                <h3>Approximate survival time</h3>
-                <p className="estimate-large">{estimate.label}</p>
+                <h3>How long you could survive here</h3>
+                <p className="estimate-large">
+                  {g.stats.health > 0 ? '~ ' : ''}
+                  {estimate.label}
+                </p>
                 <p>
-                  How long an unprotected human might last here with your
-                  current health and supplies. Conditions, shelter, and choices
-                  can change the estimate.
+                  Your estimated survival in {g.period.name}, in the{' '}
+                  {g.region.name.toLowerCase()}, with your current health,
+                  water, energy, and shelter. It assumes ordinary clothing, no
+                  breathing gear, and foraging from whatever water and food the
+                  landscape offers — not airdrops or modern tools.
+                </p>
+                <p>
+                  Once the air is breathable, thirst, exposure, injury, and
+                  infection usually matter more than predators. This is a
+                  hypothetical lifespan, not a timer. Waiting or walking does
+                  not use it up. Risky decisions can still end an expedition
+                  immediately.
                 </p>
                 <div className="risk-factors">
                   {Object.entries(estimate.factors).map(([name, n]) => (
@@ -99,8 +116,10 @@ export default function Panels({
                   ))}
                 </div>
                 <p className="fineprint">
-                  A simplified game estimate, not a measured historical
-                  lifespan. Ancient conditions remain uncertain.
+                  Tuned to a modern-human breathability ladder across deep time.
+                  Ancient oxygen and climate are uncertain, so the number is a
+                  game estimate — not a lab prediction. Fatal choice percentages
+                  are authored odds, not historical attack rates.
                 </p>
               </>
             ) : g.panel === 'journal' ? (
@@ -171,21 +190,40 @@ export default function Panels({
                 </div>
                 <div className="help-row">
                   <kbd>Esc</kbd>
-                  <p>
-                    Pause your expedition while you step away.
-                  </p>
+                  <p>Pause your expedition while you step away.</p>
                 </div>
                 <p>
                   Choose a region beside the globe. Watch your water, energy,
                   health, and safety. Decisions affect your prospects; travel
-                  resets supplies. Discover all 28 worlds to complete your
-                  atlas.
+                  and retry reset supplies and encounters, keeping your journal.
+                  Risky choices show a fatal chance before you choose. Giving
+                  wildlife space avoids an attack roll. The survival estimate
+                  changes with conditions and choices, never with time spent
+                  playing. Discover all 28 worlds to complete your atlas.
                 </p>
               </>
             ) : (
               <>
                 <h3>Scientific reference points</h3>
                 <ul>
+                  <li>
+                    <a
+                      href="https://www.osha.gov/laws-regs/standardinterpretations/2008-05-01"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      OSHA — effects of oxygen-deficient air
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.cdc.gov/niosh/heat-stress/about/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      CDC / NIOSH — heat, humidity, and exposure
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="https://www.nhm.ac.uk/discover/news/2023/april/can-ancient-food-webs-help-predict-biodiversity-collapse.html"
@@ -277,14 +315,31 @@ export default function Panels({
             </>
           ) : (
             <div className="choices">
-              {g.encounter?.choices.map((c, i) => (
-                <button key={c.label} onClick={() => g.choose(c)}>
-                  <small>0{i + 1}</small>
-                  {c.label}
-                  <span>↗</span>
-                </button>
-              ))}
+              {g.encounter?.choices.map((c, i) => {
+                const chance = fatalChance(c, g.period, g.region, g.stats);
+                return (
+                  <button key={c.label} onClick={() => g.choose(c)}>
+                    <small>0{i + 1}</small>
+                    <span className="choice-copy">
+                      {c.label}
+                      <small
+                        className={chance > 0 ? 'choice-danger' : 'choice-safe'}
+                      >
+                        {chance > 0
+                          ? `${Math.round(chance * 100)}% fatal chance`
+                          : 'No fatal risk from this choice'}
+                      </small>
+                    </span>
+                    <span aria-hidden="true">↗</span>
+                  </button>
+                );
+              })}
             </div>
+          )}
+          {!g.outcome && (
+            <p className="fineprint">
+              Risk reflects this world, your condition, and the action you take.
+            </p>
           )}
         </DialogContent>
       </Dialog>

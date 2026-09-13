@@ -1,10 +1,11 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { periods, regions } from './data';
-import { applyChanges, freshStats } from './survival';
+import { freshStats } from './survival';
 import {
   availableEvents,
   nextEncounter,
+  resolveChoice,
   type Encounter,
   type Choice,
 } from './events';
@@ -37,6 +38,8 @@ export function useExpedition() {
     [visited, setVisited] = useState<string[]>([]),
     [entries, setEntries] = useState<Entry[]>([]),
     [seenEvents, setSeenEvents] = useState<string[]>([]),
+    [runEvents, setRunEvents] = useState<string[]>([]),
+    [deathReason, setDeathReason] = useState(''),
     [encounter, setEncounter] = useState<Encounter | null>(null),
     [outcome, setOutcome] = useState<Choice | null>(null),
     [panel, setPanel] = useState<
@@ -55,6 +58,7 @@ export function useExpedition() {
     lastEvent = useRef(0),
     travelTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
     loaded = useRef(false);
+  const choiceLocked = useRef(false);
   const period = periods[index],
     region = regions[regionIndex];
   useEffect(() => {
@@ -127,6 +131,10 @@ export function useExpedition() {
     setIndex(i);
     setEncounter(null);
     setOutcome(null);
+    choiceLocked.current = false;
+    setRunEvents([]);
+    setDeathReason('');
+    setPaused(false);
     setStats(freshStats());
     setTraveling(true);
     direction.current = 0;
@@ -154,16 +162,18 @@ export function useExpedition() {
     !traveling;
   const trigger = useCallback(() => {
     if (encounter || stats.health <= 0) return;
-    const e = nextEncounter(period, region, seenEvents, world.current.nearby);
+    const e = nextEncounter(period, region, runEvents, world.current.nearby);
     lastEvent.current = world.current.distance;
     if (!e) return;
     setSeenEvents((old) => (old.includes(e.id) ? old : [...old, e.id]));
+    setRunEvents((old) => (old.includes(e.id) ? old : [...old, e.id]));
     setEncounter(e);
     setOutcome(null);
+    choiceLocked.current = false;
     direction.current = 0;
     depth.current = 0;
     lastEvent.current = world.current.distance;
-  }, [encounter, stats.health, period, region, seenEvents]);
+  }, [encounter, stats.health, period, region, runEvents]);
   const explore = useCallback(
     (d: number) => {
       setDistance(d);
@@ -173,10 +183,26 @@ export function useExpedition() {
     [trigger],
   );
   const choose = (choice: Choice) => {
-    if (outcome) return;
-    setStats((s) => applyChanges(s, choice.changes));
-    setOutcome(choice);
-    record(encounter?.title || 'Encounter', choice.outcome);
+    if (
+      choiceLocked.current ||
+      outcome ||
+      !encounter ||
+      stats.health <= 0 ||
+      !encounter.choices.includes(choice)
+    )
+      return;
+    // Roll once outside a React state updater; double clicks cannot reroll fate.
+    choiceLocked.current = true;
+    const result = resolveChoice(choice, period, region, stats);
+    setStats(result.stats);
+    record(encounter.title, result.outcome.outcome);
+    if (result.fatal) {
+      setDeathReason(result.outcome.outcome);
+      setEncounter(null);
+      setOutcome(null);
+      direction.current = 0;
+      depth.current = 0;
+    } else setOutcome(result.outcome);
   };
   const changeRegion = (i: number) => {
     if (
@@ -218,12 +244,12 @@ export function useExpedition() {
   };
   return {
     hasUnseenWildlife: period.species.some(
-      (s) => !seenEvents.includes(`wildlife:${s.name}`),
+      (s) => !runEvents.includes(`wildlife:${s.name}`),
     ),
     canInvestigate:
-      availableEvents(period, region, seenEvents).length > 0 ||
+      availableEvents(period, region, runEvents).length > 0 ||
       (period.species.some((s) => s.name === nearby) &&
-        !seenEvents.includes(`wildlife:${nearby}`)),
+        !runEvents.includes(`wildlife:${nearby}`)),
     nextUnvisited: periods
       .map((_, offset) => (index + offset + 1) % periods.length)
       .find((i) => !visited.includes(periods[i].id)),
@@ -245,6 +271,7 @@ export function useExpedition() {
     paused,
     setPaused,
     stats,
+    deathReason,
     distance,
     visited,
     entries,
@@ -268,17 +295,7 @@ export function useExpedition() {
       setEncounter(null);
       setOutcome(null);
     },
-    retry: () => {
-      setStats(freshStats());
-      setPaused(false);
-      world.current = {
-        ...world.current,
-        x: 650,
-        z: 3,
-        moving: false,
-        nearby: '',
-      };
-    },
+    retry: () => travel(index),
     record,
   };
 }

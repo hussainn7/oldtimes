@@ -250,13 +250,19 @@ export default function Game() {
           />
 
           {(g.paused || g.stats.health <= 0) && !g.panel && !g.encounter && (
-            <div className="pause-screen">
-              <h2>{g.stats.health <= 0 ? 'Expedition ended' : 'Paused'}</h2>
+            <div
+              className="pause-screen"
+              role={g.stats.health <= 0 ? 'alert' : undefined}
+            >
+              <h2>{g.stats.health <= 0 ? 'Expedition over' : 'Paused'}</h2>
               <p>
                 {g.stats.health <= 0
-                  ? 'Discoveries saved. Try again or explore another world.'
+                  ? g.deathReason
                   : 'Your supplies are safe.'}
               </p>
+              {g.stats.health <= 0 && (
+                <p>Discoveries saved. Try again or explore another world.</p>
+              )}
               <button
                 className="primary"
                 type="button"

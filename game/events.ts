@@ -1,8 +1,77 @@
-import type { Biome, Stats, Period, Region } from './types';
+import type { Biome, Stats, Period, Region, Species } from './types';
+import { applyChanges, clamp } from './survival';
 export interface Choice {
   label: string;
   outcome: string;
   changes: Partial<Stats>;
+  risk?: {
+    kind: 'wildlife' | 'terrain' | 'exposure' | 'poison' | 'air';
+    base: number;
+    fatal: string;
+  };
+}
+
+/** Displayed odds and the actual roll share this function. These are game odds. */
+export function fatalChance(c: Choice, p: Period, r: Region, s: Stats) {
+  if (s.health <= 0) return 0;
+  if (applyChanges(s, c.changes).health <= 0) return 1;
+  if (!c.risk) return 0;
+  const vulnerability = 1 + (100 - s.health) / 200 + (100 - s.energy) / 400;
+  const caution = 1 - s.safety / 250 - s.knowledge / 500;
+  const danger = clamp(p.danger + r.danger);
+  const temperature = p.temperature + r.temperature;
+  const environment =
+    c.risk.kind === 'air'
+      ? 1 + Math.max(0, 19.5 - p.oxygen) / 10
+      : c.risk.kind === 'exposure'
+        ? (1 + Math.max(0, Math.abs(temperature - 20) - 10) / 30) *
+          (1 - s.shelter / 200)
+        : 0.7 + danger / 100;
+  return (
+    Math.round(
+      Math.max(
+        0.01,
+        Math.min(0.95, c.risk.base * vulnerability * caution * environment),
+      ) * 100,
+    ) / 100
+  );
+}
+
+export function resolveChoice(
+  c: Choice,
+  p: Period,
+  r: Region,
+  s: Stats,
+  random = Math.random,
+) {
+  const chance = fatalChance(c, p, r, s);
+  const fatal = chance === 1 || (chance > 0 && random() < chance);
+  const next = applyChanges(s, c.changes);
+  if (fatal) next.health = 0;
+  const outcome = fatal
+    ? `You died. ${chance === 1 ? 'Your injuries were more than you could survive.' : c.risk?.fatal} Expedition over.`
+    : c.outcome;
+  const changes = Object.fromEntries(
+    Object.entries(next)
+      .filter(([key, value]) => value !== s[key as keyof Stats])
+      .map(([key, value]) => [key, value - s[key as keyof Stats]]),
+  ) as Partial<Stats>;
+  return { stats: next, outcome: { ...c, outcome, changes }, fatal };
+}
+
+/** Size is a visual scale, so behavior and body type determine the main threat. */
+function wildlifeThreat(s: Species) {
+  if (s.behavior === 'hunt')
+    return s.kind === 'theropod' ? 0.48 : s.size >= 1 ? 0.35 : 0.2;
+  if (['sauropod', 'mammoth', 'ceratopsian', 'stegosaur'].includes(s.kind))
+    return 0.25;
+  if (
+    s.behavior === 'graze' &&
+    s.size >= 0.65 &&
+    ['deer', 'amphibian', 'bird', 'theropod'].includes(s.kind)
+  )
+    return 0.12;
+  return 0;
 }
 export interface Encounter {
   id: string;
@@ -27,7 +96,8 @@ const choice = (
   label: string,
   outcome: string,
   changes: Partial<Stats>,
-): Choice => ({ label, outcome, changes });
+  risk?: Choice['risk'],
+): Choice => ({ label, outcome, changes, ...(risk ? { risk } : {}) });
 export const events: Encounter[] = [
   {
     id: 'river',
@@ -45,6 +115,12 @@ export const events: Encounter[] = [
         'Drink directly',
         'You rehydrate, but stomach trouble slows you down.',
         { water: 25, health: -12 },
+        {
+          kind: 'poison',
+          base: 0.06,
+          fatal:
+            'Contaminated water causes a fatal illness before you can find help.',
+        },
       ),
       choice('Keep moving', 'You leave the river behind.', {
         water: -5,
@@ -72,6 +148,11 @@ export const events: Encounter[] = [
         'Climb an exposed ridge',
         'The height avoids floodwater but exposes you to wind.',
         { safety: -8, energy: -12 },
+        {
+          kind: 'terrain',
+          base: 0.14,
+          fatal: 'A gust knocks you from the exposed ridge.',
+        },
       ),
     ],
   },
@@ -96,6 +177,11 @@ export const events: Encounter[] = [
         'Run across the clearing',
         'Sudden movement draws attention. Your escape leaves you exhausted.',
         { energy: -22, safety: -16, health: -8 },
+        {
+          kind: 'wildlife',
+          base: 0.32,
+          fatal: 'The predator gives chase and catches you in the open.',
+        },
       ),
     ],
   },
@@ -116,6 +202,12 @@ export const events: Encounter[] = [
         'Try a mouthful',
         'The plant is irritating. The gamble costs you.',
         { health: -18, energy: 4 },
+        {
+          kind: 'poison',
+          base: 0.18,
+          fatal:
+            'The unidentified plant is poisonous. You cannot recover without treatment.',
+        },
       ),
       choice(
         'Search the open ground',
@@ -159,11 +251,20 @@ export const events: Encounter[] = [
         'You learn how the herd uses the landscape.',
         { knowledge: 12, safety: 5, energy: -3 },
       ),
-      choice('Walk between them', 'A defensive animal forces you to retreat.', {
-        safety: -20,
-        health: -8,
-        energy: -8,
-      }),
+      choice(
+        'Walk between them',
+        'A defensive animal forces you to retreat.',
+        {
+          safety: -20,
+          health: -8,
+          energy: -8,
+        },
+        {
+          kind: 'wildlife',
+          base: 0.24,
+          fatal: 'A protective adult charges and tramples you.',
+        },
+      ),
       choice(
         'Take a wide detour',
         'You pass safely at the cost of a longer walk.',
@@ -188,6 +289,11 @@ export const events: Encounter[] = [
         'Follow them',
         'You find activity ahead, but lose a safe line of retreat.',
         { knowledge: 6, safety: -12, energy: -6 },
+        {
+          kind: 'wildlife',
+          base: 0.12,
+          fatal: 'The tracks lead straight into a dangerous animal encounter.',
+        },
       ),
     ],
   },
@@ -221,10 +327,19 @@ export const events: Encounter[] = [
         'You recover some energy and avoid the hottest hours.',
         { energy: 12, water: -5, safety: 5 },
       ),
-      choice('Push through', 'The crossing drains your reserves.', {
-        water: -20,
-        energy: -13,
-      }),
+      choice(
+        'Push through',
+        'The crossing drains your reserves.',
+        {
+          water: -20,
+          energy: -13,
+        },
+        {
+          kind: 'exposure',
+          base: 0.13,
+          fatal: 'You collapse from heat exposure before reaching shelter.',
+        },
+      ),
       choice(
         'Move along the shaded edge',
         'The longer route offers intermittent shelter.',
@@ -262,10 +377,19 @@ export const events: Encounter[] = [
         safety: 8,
         energy: -6,
       }),
-      choice('Force a crossing', 'Mud slows you and consumes your strength.', {
-        energy: -20,
-        health: -5,
-      }),
+      choice(
+        'Force a crossing',
+        'Mud slows you and consumes your strength.',
+        {
+          energy: -20,
+          health: -5,
+        },
+        {
+          kind: 'terrain',
+          base: 0.2,
+          fatal: 'You lose your footing and drown in the deep channel.',
+        },
+      ),
       choice('Probe a route along the edge', 'You learn to read the marsh.', {
         knowledge: 7,
         energy: -8,
@@ -302,11 +426,20 @@ export const events: Encounter[] = [
         energy: -10,
         safety: 8,
       }),
-      choice('Climb down', 'Loose rock makes the descent difficult.', {
-        health: -12,
-        energy: -10,
-        safety: -8,
-      }),
+      choice(
+        'Climb down',
+        'Loose rock makes the descent difficult.',
+        {
+          health: -12,
+          energy: -10,
+          safety: -8,
+        },
+        {
+          kind: 'terrain',
+          base: 0.22,
+          fatal: 'A foothold breaks and the fall is fatal.',
+        },
+      ),
     ],
   },
   {
@@ -343,6 +476,11 @@ export const events: Encounter[] = [
         'Eat without identifying it',
         'An unpleasant reaction costs health.',
         { energy: 10, health: -20 },
+        {
+          kind: 'poison',
+          base: 0.22,
+          fatal: 'The fruit is toxic. The poisoning proves fatal.',
+        },
       ),
     ],
   },
@@ -362,6 +500,11 @@ export const events: Encounter[] = [
         'Stay to observe',
         'You record marine patterns as the water rises.',
         { knowledge: 12, safety: -20, health: -12 },
+        {
+          kind: 'terrain',
+          base: 0.28,
+          fatal: 'The tide cuts off your escape and sweeps you away.',
+        },
       ),
     ],
   },
@@ -381,6 +524,12 @@ export const events: Encounter[] = [
         'Search farther inland',
         'No location can make an oxygen-poor atmosphere breathable.',
         { health: -25, energy: -12 },
+        {
+          kind: 'air',
+          base: 0.3,
+          fatal:
+            'You collapse in the oxygen-poor air, too far from the landing point.',
+        },
       ),
     ],
   },
@@ -396,10 +545,19 @@ export const events: Encounter[] = [
         'You avoid the flow, but this world remains lethally hostile.',
         { safety: 8, health: -8, energy: -10 },
       ),
-      choice('Approach the glow', 'Heat drives you back.', {
-        health: -28,
-        knowledge: 6,
-      }),
+      choice(
+        'Approach the glow',
+        'Heat drives you back.',
+        {
+          health: -28,
+          knowledge: 6,
+        },
+        {
+          kind: 'exposure',
+          base: 0.42,
+          fatal: 'Superheated gases engulf the path before you can retreat.',
+        },
+      ),
     ],
   },
   {
@@ -437,6 +595,12 @@ export const events: Encounter[] = [
         'Cross the ice',
         'The surface cracks; you retreat soaked and chilled.',
         { health: -18, energy: -15 },
+        {
+          kind: 'terrain',
+          base: 0.32,
+          fatal:
+            'The ice breaks beneath you and you cannot escape the freezing water.',
+        },
       ),
     ],
   },
@@ -498,26 +662,45 @@ export function eligibleEvents(p: Period, r?: Region) {
   // These extinction events had different causes; sharing an ash biome must
   // not turn the end-Permian greenhouse into an asteroid impact winter.
   return generic.map((e) =>
-    e.id === 'ashfall' && p.id === 'great-dying'
+    e.id === 'predator'
       ? {
           ...e,
-          id: 'volcanic-aftermath',
-          title: 'After the eruptions',
-          body: 'Volcanic warming has disrupted this ecosystem. Sparse vegetation offers little cover.',
-          choices: [
-            choice(
-              'Shelter and conserve water',
-              'You shelter from the heat and ration your water.',
-              { shelter: 10, energy: 5, water: -6 },
-            ),
-            choice(
-              'Survey the surviving vegetation',
-              'You document surviving plants in a landscape recovering from volcanic disruption.',
-              { knowledge: 15, health: -8, energy: -12 },
-            ),
-          ],
+          choices: e.choices.map((c) =>
+            c.risk?.kind === 'wildlife'
+              ? {
+                  ...c,
+                  risk: {
+                    ...c.risk,
+                    base: Math.max(
+                      ...p.species
+                        .filter((s) => s.behavior === 'hunt')
+                        .map(wildlifeThreat),
+                    ),
+                  },
+                }
+              : c,
+          ),
         }
-      : e,
+      : e.id === 'ashfall' && p.id === 'great-dying'
+        ? {
+            ...e,
+            id: 'volcanic-aftermath',
+            title: 'After the eruptions',
+            body: 'Volcanic warming has disrupted this ecosystem. Sparse vegetation offers little cover.',
+            choices: [
+              choice(
+                'Shelter and conserve water',
+                'You shelter from the heat and ration your water.',
+                { shelter: 10, energy: 5, water: -6 },
+              ),
+              choice(
+                'Survey the surviving vegetation',
+                'You document surviving plants in a landscape recovering from volcanic disruption.',
+                { knowledge: 15, health: -8, energy: -12 },
+              ),
+            ],
+          }
+        : e,
   );
 }
 
@@ -546,7 +729,7 @@ export function availableEvents(p: Period, r: Region, seen: readonly string[]) {
   );
 }
 
-/** Discoveries do not repeat, including after revisiting an era or reloading. */
+/** An encounter is offered once per supplied expedition history. */
 export function nextEncounter(
   p: Period,
   r: Region,
@@ -561,13 +744,14 @@ export function nextEncounter(
   const wildlifeId = species ? `wildlife:${species.name}` : '';
   if (species && !seen.includes(wildlifeId)) {
     const hunter = species.behavior === 'hunt';
+    const threat = wildlifeThreat(species);
     return {
       id: wildlifeId,
       category: 'Wildlife',
       title: species.name,
       body: hunter
         ? `A ${species.name} is hunting nearby. Keep your distance.`
-        : `You spot a ${species.name}. Pause to watch how it moves through this habitat.`,
+        : `You spot a ${species.name}. ${threat ? 'Even a plant-eater can defend its space. Keep a clear escape route.' : 'Watch without disturbing it.'}`,
       biomes: [p.biome],
       choices: [
         choice(
@@ -579,6 +763,24 @@ export function nextEncounter(
           'Give it space',
           `You leave ${species.name} undisturbed and find a quieter route.`,
           { safety: 10, energy: -4 },
+        ),
+        choice(
+          'Approach the animal',
+          threat
+            ? `The ${species.name} reacts to your approach. You escape with an injury and a closer observation.`
+            : `The ${species.name} moves away. You record a brief close observation.`,
+          threat
+            ? { knowledge: 18, health: -14, safety: -18, energy: -10 }
+            : { knowledge: 6, energy: -4 },
+          threat
+            ? {
+                kind: 'wildlife',
+                base: threat,
+                fatal: hunter
+                  ? `The ${species.name} attacks before you can retreat.`
+                  : `The ${species.name} strikes as you enter its space. Your injuries are fatal.`,
+              }
+            : undefined,
         ),
       ],
     };

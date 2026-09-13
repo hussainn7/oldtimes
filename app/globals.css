@@ -1062,6 +1062,21 @@ footer {
   margin-left: auto;
   color: var(--accent);
 }
+.choices button .choice-copy {
+  margin-left: 0;
+  color: inherit;
+}
+.choice-copy small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+}
+.choices .choice-danger {
+  color: var(--danger);
+}
+.choices .choice-safe {
+  color: var(--ink-muted);
+}
 .consequences {
   display: flex;
   gap: 6px;

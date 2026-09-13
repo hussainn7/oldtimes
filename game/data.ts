@@ -624,26 +624,74 @@ export const periods: Period[] = rows.map(
                 ? 'Dry basins and seasonal rivers'
                 : 'River floodplains and wooded uplands',
     species: animals ? fauna[animals] : [],
-    ...(mya > 1000 ? { oxygen: 0.5 } : {}),
+    // Breathable-air ladder for a modern human (game % O₂, not exact paleo values).
+    ...(id === 'formation' ? { oxygen: 0 } : {}),
+    ...(['first-oceans', 'microbial', 'oxygen'].includes(id)
+      ? { oxygen: 0.2 }
+      : {}),
+    ...(id === 'complex-cells' ? { oxygen: 1.5 } : {}),
+    ...(id === 'rodinia' ? { oxygen: 7, food: 2 } : {}),
+    ...(id === 'cambrian'
+      ? { oxygen: 12.5, food: 4, hazards: ['Hypoxia', 'No edible land plants'] }
+      : {}),
+    ...(id === 'ordovician'
+      ? {
+          oxygen: 16,
+          food: 6,
+          hazards: ['Low oxygen', 'Barren land', 'Dehydration'],
+        }
+      : {}),
+    ...(id === 'devonian'
+      ? {
+          oxygen: 19,
+          food: 30,
+          water: 75,
+          vegetation: 'Early trees & primitive ferns',
+        }
+      : {}),
+    ...(id === 'carboniferous' ? { oxygen: 30, food: 40, water: 90 } : {}),
+    ...(id === 'permian' ? { oxygen: 20, food: 24, water: 28 } : {}),
     ...(id === 'great-dying'
       ? {
           climate: 'Volcanic greenhouse',
-          temperature: 38,
+          oxygen: 14,
+          temperature: 40,
+          food: 8,
+          water: 18,
           hazards: ['Extreme warming', 'Volcanic gases', 'Ecosystem collapse'],
           vegetation: 'Sparse surviving vegetation',
         }
       : {}),
-    ...(id === 'devonian'
-      ? { oxygen: 18, vegetation: 'Early trees & primitive ferns' }
+    ...(id === 'triassic' ? { oxygen: 20, temperature: 28, food: 32, water: 40 } : {}),
+    ...(id === 'jurassic' ? { oxygen: 23, food: 40 } : {}),
+    ...(id === 'cretaceous' ? { oxygen: 25, food: 48 } : {}),
+    ...(id === 'last-dinosaurs' ? { oxygen: 24, food: 45 } : {}),
+    ...(id === 'impact'
+      ? {
+          oxygen: 18,
+          temperature: 2,
+          food: 4,
+          water: 18,
+          hazards: ['Darkness', 'Food-chain collapse', 'Ash', 'Cold'],
+        }
       : {}),
     ...(id === 'eocene'
-      ? { vegetation: 'Broadleaf forests & palms', danger: 40 }
+      ? { vegetation: 'Broadleaf forests & palms', danger: 40, food: 55 }
       : {}),
+    ...(id === 'miocene' ? { food: 65, water: 55 } : {}),
+    ...(id === 'pliocene' ? { food: 68, water: 55 } : {}),
     ...(id === 'sapiens'
-      ? { species: fauna.miocene.filter((s) => s.name !== 'Three-toed horse') }
+      ? {
+          species: fauna.miocene.filter((s) => s.name !== 'Three-toed horse'),
+          food: 70,
+          water: 55,
+        }
       : {}),
     ...(['pleistocene', 'million'].includes(id)
       ? {
+          food: 52,
+          water: 55,
+          temperature: -2,
           species: [
             animal(
               id === 'pleistocene' ? 'Early mammoth' : 'Steppe mammoth',
@@ -657,6 +705,7 @@ export const periods: Period[] = rows.map(
           ],
         }
       : {}),
+    ...(id === 'human-world' ? { food: 58, water: 55, temperature: -2 } : {}),
     ...(id === 'first-oceans'
       ? { vegetation: 'No confirmed life at this checkpoint' }
       : {}),
